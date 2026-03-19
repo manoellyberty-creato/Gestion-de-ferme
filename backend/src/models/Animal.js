@@ -30,7 +30,7 @@ const animalSchema = new Schema(
         },
         entryDate: { //date d'entrée
             type: Date,
-            default: null
+            default:null
         },
         exitDate: {  //date de sortie 
             type: Date,
