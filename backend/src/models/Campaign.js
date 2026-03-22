@@ -11,6 +11,7 @@ const campaignSchema = new mongoose.Schema(
 
     categoryId: {
       type: String,
+      unique: true,
       required: true
     },
 

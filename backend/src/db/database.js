@@ -16,7 +16,6 @@ export async function disconnectDB() {
         console.log('MongoDB disconnected');
     } catch (error) {
         console.error('MongoDB disconnection error:', error.message);
-        process.exit(1);
     }
 };
 

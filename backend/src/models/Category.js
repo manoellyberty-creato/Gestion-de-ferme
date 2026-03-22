@@ -21,7 +21,6 @@ const categorySchema = new mongoose.Schema(
       type: Boolean,
       default: true
     },
-    // Métadonnées spécifiques à la catégorie
     metadata: {
       type: mongoose.Schema.Types.Mixed
     }

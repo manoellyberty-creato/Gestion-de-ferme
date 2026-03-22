@@ -17,7 +17,6 @@ const departmentSchema = new mongoose.Schema(
       type: Boolean,
       default: true
     },
-    // Métadonnées spécifiques au département
     metadata: {
       type: mongoose.Schema.Types.Mixed
     }
