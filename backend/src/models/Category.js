@@ -29,7 +29,7 @@ const categorySchema = new mongoose.Schema(
 );
 
 // Index composé pour éviter doublons
-categorySchema.index({ name: 1, department: 1 }, { unique: true });
-categorySchema.index({ department: 1 });
+// categorySchema.index({ name: 1, department: 1 }, { unique: true });
+// categorySchema.index({ department: 1 });
 
 export default mongoose.model("Category", categorySchema);

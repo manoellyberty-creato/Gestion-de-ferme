@@ -12,8 +12,8 @@ import {
 // ===> Création d'une campagne
 export async function createCampaignController(req, res) {
     try {
-        const data = req.body; 
-        const userId = req.auth.userId;
+        const data = req.body;
+        const userId = req.params.userId;
         const campaign = await createCampaign(data, userId);
         res.status(201).json(campaign);
     } catch (error) {
@@ -98,7 +98,7 @@ export async function getCampaignsByDepartmentController(req, res) {
 export async function updateCampaignController(req, res) {
     try {
         const data = req.body;
-        const campaignId = req.params.campaignId; 
+        const campaignId = req.params.campaignId;
         const campaign = await updateCampaign(campaignId, data);
         res.status(200).json(campaign);
     } catch (error) {
@@ -111,6 +111,50 @@ export async function deleteCampaignController(req, res) {
     try {
         const campaignId = req.params.campaignId;
         const result = await deleteCampaign(campaignId);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(error.statusCode || 500).json({ message: error.message });
+    }
+}
+
+// ===> Assignation d'un agent à une campagne
+export async function assignAgentToCampaignController(req, res) {
+    try {
+        const { campaignId, userId } = req.params;
+        const result = await assignAgentToCampaign(campaignId, userId);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(error.statusCode || 500).json({ message: error.message });
+    }
+}
+
+// ===> Assignation d'un vétérinaire à une campagne
+export async function assignVeterinarianToCampaignController(req, res) {
+    try {
+        const { campaignId, userId } = req.params;
+        const result = await assignVeterinarianToCampaign(campaignId, userId);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(error.statusCode || 500).json({ message: error.message });
+    }
+}
+
+// ===> Assignation d'un manager à une campagne
+export async function assignManagerToCampaignController(req, res) {
+    try {
+        const { campaignId, userId } = req.params;
+        const result = await assignManagerToCampaign(campaignId, userId);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(error.statusCode || 500).json({ message: error.message });
+    }
+}
+
+// ===> Assignation d'un comptable à une campagne
+export async function assignComptableToCampaignController(req, res) {
+    try {
+        const { campaignId, userId } = req.params;
+        const result = await assignComptableToCampaign(campaignId, userId);
         res.status(200).json(result);
     } catch (error) {
         res.status(error.statusCode || 500).json({ message: error.message });

@@ -1,11 +1,11 @@
 import Animal from "../models/Animal.js";
-import Prescription from "../models/Prescription.js";
+import prescriptionSchema from "../models/Prescription.js";
 
 // ===> SERVICE : DETECTION ALERTES
 export async function detectAlerts(campaignId) {
     const alerts = [];
     
-    // === Récupération des animaux
+    // ===> Récupération des animaux
     const animals = await Animal.find({ campaignId });
     const totalAnimals = animals.length;
     if (totalAnimals === 0) {
@@ -46,7 +46,7 @@ export async function detectAlerts(campaignId) {
     }
 
     // ===> ALERTE MALADIE CONTAGIEUSE
-    const recentPrescriptions = await Prescription.find({
+    const recentPrescriptions = await prescriptionSchema.find({
         campaignId,
         createdAt: {
             $gte: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)        

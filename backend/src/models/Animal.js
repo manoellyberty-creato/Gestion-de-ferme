@@ -9,7 +9,6 @@ const animalSchema = new mongoose.Schema(
     },
     qrCode: {
       type: String,
-      unique: true,
       required: true
     },
     initialWeight: {
@@ -67,9 +66,9 @@ const animalSchema = new mongoose.Schema(
 );
 
 // Index
-animalSchema.index({ campaignId: 1 });
-animalSchema.index({ qrCode: 1 }, { unique: true });
+// animalSchema.index({ campaignId: 1 });
+animalSchema.index({ qrCode: 1 });
 animalSchema.index({ status: 1 });
-animalSchema.index({ campaignId: 1, status: 1 });
+// animalSchema.index({ campaignId: 1, status: 1 });
 
 export default mongoose.model("Animal", animalSchema);

@@ -240,6 +240,38 @@ export async function deleteCampaign(campaignId) {
     return { message: "Campagne supprimée avec succès" };
 }
 
+// ===> Assignation d'un manager à une campagne
+export async function assignManagerToCampaign(campaignId, userId) {
+    const campaign = await Campaign.findById(campaignId);
+    if (!campaign) {
+        const error = new Error("La campagne n'existe pas");
+        error.statusCode = 404;
+        throw error;
+    }
+
+    // === Vérification de l'agent
+    const manager = await User.findById(userId);
+    if (!manager) {
+        const error = new Error("L'agent n'existe pas");
+        error.statusCode = 404;
+        throw error;
+    }
+    if(manager.role !== "manager"){
+        const error = new Error("L'utilisateur n'est pas un manager");
+        error.statusCode = 403;
+        throw error;
+    }
+
+    // === Assignation
+    campaign.assignedAgents.push({
+        userId: userId,
+        assignedAt: Date.now(),
+        role: "manager"
+    });
+    await campaign.save();
+    return campaign.assignedAgents;
+}
+
 // ===> Assignation d'un agent à une campagne
 export async function assignAgentToCampaign(campaignId, userId) {
     const campaign = await Campaign.findById(campaignId);
@@ -281,8 +313,7 @@ export async function assignAgentToCampaign(campaignId, userId) {
     });
 
     await campaign.save();
-
-    return campaign;
+    return campaign.assignedAgents;
 }
 
 // ===> Assignation d'un vétérinaire à une campagne
@@ -294,11 +325,16 @@ export async function assignVeterinarianToCampaign(campaignId, userId) {
         throw error;
     }
 
-    // === Vérification de l'agent
+    // === Vérification du vétérinaire
     const veterinarian = await User.findById(userId);
     if (!veterinarian) {
         const error = new Error("L'agent n'existe pas");
         error.statusCode = 404;
+        throw error;
+    }
+    if(veterinarian.role !== "veterinarian"){
+        const error = new Error("L'utilisateur n'est pas un vétérinaire");
+        error.statusCode = 403;
         throw error;
     }
 
@@ -326,6 +362,37 @@ export async function assignVeterinarianToCampaign(campaignId, userId) {
     });
 
     await campaign.save();
+    return campaign.assignedAgents;
+}
 
-    return campaign;
+// ===> Assignation d'un comptable à une campagne
+export async function assignComptableToCampaign(campaignId, userId) {
+    const campaign = await Campaign.findById(campaignId);
+    if (!campaign) {
+        const error = new Error("La campagne n'existe pas");
+        error.statusCode = 404;
+        throw error;
+    }
+    // === Vérification du comptable
+    const comptable = await User.findById(userId);
+    if (!comptable) {
+        const error = new Error("L'utilisateur n'existe pas");
+        error.statusCode = 404;
+        throw error;
+    }
+    if(comptable.role !== "comptable"){
+        const error = new Error("L'utilisateur n'est pas un comptable");
+        error.statusCode = 403;
+        throw error;
+    }
+
+    // === Assignation
+    campaign.assignedAgents.push({
+        userId: userId,
+        assignedAt: Date.now(),
+        role: "comptable"
+    });
+
+    await campaign.save();
+    return campaign.assignedAgents;
 }

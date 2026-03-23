@@ -6,12 +6,12 @@ const campaignSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
     },
 
     categoryId: {
       type: String,
-      unique: true,
+      ref: "Category",
       required: true
     },
 
@@ -94,9 +94,10 @@ const campaignSchema = new mongoose.Schema(
 );
 
 // Index
-campaignSchema.index({ categoryId: 1 });
-campaignSchema.index({ managerId: 1 });
-campaignSchema.index({ status: 1 });
-campaignSchema.index({ goal: 1 });
+campaignSchema.index({ name: 1 }, { unique: true })
+// campaignSchema.index({ categoryId: 1 });
+// campaignSchema.index({ managerId: 1 });
+// campaignSchema.index({ status: 1 });
+// campaignSchema.index({ goal: 1 });
 
 export default mongoose.model("Campaign", campaignSchema);

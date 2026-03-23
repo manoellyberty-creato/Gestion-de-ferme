@@ -51,7 +51,7 @@ const alertSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-alertSchema.index({ campaignId: 1, type: 1 });
-alertSchema.index({ createdAt: -1 });
+// alertSchema.index({ campaignId: 1, type: 1 });
+// alertSchema.index({ createdAt: -1 });
 
 export default mongoose.model("Alert", alertSchema);

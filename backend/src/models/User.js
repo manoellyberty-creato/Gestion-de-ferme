@@ -12,7 +12,6 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: true,
-      unique: true,
       lowercase: true,
       trim: true
     },
@@ -37,9 +36,6 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ==========================
-// Middleware : hash password avant sauvegarde
-// ==========================
 userSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
     this.password = await bcrypt.hash(this.password, 12);
@@ -47,20 +43,11 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-// ==========================
-// Méthode d'instance : comparer mot de passe
-// ==========================
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-// ==========================
-// Index pour recherche rapide et unicité
-// ==========================
-userSchema.index({ email: 1 }, { unique: true });
-userSchema.index({ role: 1 });
+userSchema.index({ email: 1 });
+// userSchema.index({ role: 1 });
 
-// ==========================
-// Export du modèle
-// ==========================
 export default mongoose.model("User", userSchema);
