@@ -15,6 +15,10 @@ app.use(cors({
 
 app.use(express.json());
 app.use("/api", apiRouter);
+app.use((req, res, next) => {
+    console.log(req.method, req.path);
+    next();
+});
 app.use(notFound);
 app.use(errorHandler);
 export default app;

@@ -1,31 +1,56 @@
-// Routes pour la gestion des campagnes
-import express from 'express';
-import campaignController from '../controllers/campaign.controller.js';
+import express from "express";
+import {
+    createCampaignController,
+    getCampaignbyIdController,
+    getManagerCampaignsController,
+    getCampaignsController,
+    getCampaignsByCategoryController,
+    getCampaignsByDepartmentController,
+    updateCampaignController,
+    deleteCampaignController,
+    assignManagerToCampaignController,
+    assignAgentToCampaignController,
+    assignVeterinarianToCampaignController,
+    assignComptableToCampaignController
+} from "../controllers/campaign.controller.js";
 
 const router = express.Router();
 
-// Route pour récupérer toutes les campagnes
-router.get('/', campaignController.getAllCampaigns);
+// ===> Création d'une campagne
+router.post("/create/:userId", createCampaignController);
 
-// Route pour récupérer une campagne par ID
-router.get('/:id', campaignController.getCampaignById);
+// ===> Récupération d'une campagne par id
+router.get("/:campaignId", getCampaignbyIdController);
 
-// Route pour créer une nouvelle campagne
-router.post('/', campaignController.createCampaign);
+// ===> Récupération de toutes les campagnes d'un manager (avec pagination)
+router.get("/manager/:managerId", getManagerCampaignsController);
 
-// Route pour mettre à jour une campagne
-router.put('/:id', campaignController.updateCampaign);
+// ===> Récupération de toutes les campagnes (avec pagination)
+router.get("/", getCampaignsController);
 
-// Route pour clôturer une campagne
-router.post('/:id/close', campaignController.closeCampaign);
+// ===> Récupération des campagnes par catégorie (avec pagination)
+router.get("/category/:categoryId", getCampaignsByCategoryController);
 
-// Route pour supprimer une campagne
-router.delete('/:id', campaignController.deleteCampaign);
+// ===> Récupération des campagnes par département (avec pagination)
+router.get("/department/:department", getCampaignsByDepartmentController);
 
-// Route pour récupérer les statistiques d'une campagne
-router.get('/:id/stats', campaignController.getCampaignStats);
+// ===> Modification d'une campagne
+router.patch("/update/:campaignId", updateCampaignController);
 
-// Route pour récupérer les campagnes actives
-router.get('/status/active', campaignController.getActiveCampaigns);
+// ===> Suppression d'une campagne
+router.delete("/delete/:campaignId", deleteCampaignController);
+
+// ===> Assignation d'un manager à une campagne
+router.put("/assignManager/:campaignId/:userId", assignManagerToCampaignController);
+
+// ===> Assignation d'un agent à une campagne
+router.put("/assignAgent/:campaignId/:userId", assignAgentToCampaignController);
+
+// ===> Assignation d'un vétérinaire à une campagne
+router.put("/assignVeterinarian/:campaignId/:userId", assignVeterinarianToCampaignController);
+
+
+// ===> Assignation d'un comptable à une campagne
+router.put("/assignComptable/:campaignId/:userId", assignComptableToCampaignController);
 
 export default router;

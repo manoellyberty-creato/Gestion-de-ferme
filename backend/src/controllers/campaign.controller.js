@@ -1,185 +1,166 @@
-// Contrôleur pour la gestion des campagnes
-import campaignService from '../services/campaign.service.js';
+import {
+    createCampaign,
+    getCampaignbyId,
+    getManagerCampaigns,
+    getCampaigns,
+    getCampaignsByCategory,
+    getCampaignsByDepartment,
+    updateCampaign,
+    deleteCampaign,
+    assignVeterinarianToCampaign,
+    assignAgentToCampaign,
+    assignManagerToCampaign,
+    assignComptableToCampaign
+} from "../services/campaign.service.js";
 
-class CampaignController {
-    /**
-     * Récupère toutes les campagnes
-     */
-    async getAllCampaigns(req, res) {
-        try {
-            const filters = req.query;
-            const campaigns = await campaignService.getAllCampaigns(filters);
-
-            res.json({
-                success: true,
-                data: campaigns,
-                count: campaigns.length
-            });
-        } catch (error) {
-            console.error('Error in getAllCampaigns:', error);
-            res.status(500).json({
-                success: false,
-                message: error.message || 'Erreur lors de la récupération des campagnes'
-            });
-        }
-    }
-
-    /**
-     * Récupère une campagne par son ID
-     */
-    async getCampaignById(req, res) {
-        try {
-            const { id } = req.params;
-            const campaign = await campaignService.getCampaignById(id);
-
-            res.json({
-                success: true,
-                data: campaign
-            });
-        } catch (error) {
-            console.error('Error in getCampaignById:', error);
-            const statusCode = error.message === 'Campaign not found' ? 404 : 500;
-            res.status(statusCode).json({
-                success: false,
-                message: error.message
-            });
-        }
-    }
-
-    /**
-     * Crée une nouvelle campagne
-     */
-    async createCampaign(req, res) {
-        try {
-            const campaignData = req.body;
-            const campaign = await campaignService.createCampaign(campaignData);
-
-            res.status(201).json({
-                success: true,
-                data: campaign,
-                message: 'Campagne créée avec succès'
-            });
-        } catch (error) {
-            console.error('Error in createCampaign:', error);
-            const statusCode = error.message.includes('not found') ? 400 : 500;
-            res.status(statusCode).json({
-                success: false,
-                message: error.message
-            });
-        }
-    }
-
-    /**
-     * Met à jour une campagne
-     */
-    async updateCampaign(req, res) {
-        try {
-            const { id } = req.params;
-            const updateData = req.body;
-            const campaign = await campaignService.updateCampaign(id, updateData);
-
-            res.json({
-                success: true,
-                data: campaign,
-                message: 'Campagne mise à jour avec succès'
-            });
-        } catch (error) {
-            console.error('Error in updateCampaign:', error);
-            const statusCode = error.message === 'Campaign not found' || error.message === 'Invalid status' ? 400 : 500;
-            res.status(statusCode).json({
-                success: false,
-                message: error.message
-            });
-        }
-    }
-
-    /**
-     * Clôture une campagne
-     */
-    async closeCampaign(req, res) {
-        try {
-            const { id } = req.params;
-            const campaign = await campaignService.closeCampaign(id);
-
-            res.json({
-                success: true,
-                data: campaign,
-                message: 'Campagne clôturée avec succès'
-            });
-        } catch (error) {
-            console.error('Error in closeCampaign:', error);
-            const statusCode = error.message.includes('not found') || error.message.includes('already completed') ? 400 : 500;
-            res.status(statusCode).json({
-                success: false,
-                message: error.message
-            });
-        }
-    }
-
-    /**
-     * Supprime une campagne
-     */
-    async deleteCampaign(req, res) {
-        try {
-            const { id } = req.params;
-            await campaignService.deleteCampaign(id);
-
-            res.json({
-                success: true,
-                message: 'Campagne supprimée avec succès'
-            });
-        } catch (error) {
-            console.error('Error in deleteCampaign:', error);
-            const statusCode = error.message.includes('associated animals') ? 400 : 500;
-            res.status(statusCode).json({
-                success: false,
-                message: error.message
-            });
-        }
-    }
-
-    /**
-     * Récupère les statistiques d'une campagne
-     */
-    async getCampaignStats(req, res) {
-        try {
-            const { id } = req.params;
-            const result = await campaignService.getCampaignStats(id);
-
-            res.json({
-                success: true,
-                data: result
-            });
-        } catch (error) {
-            console.error('Error in getCampaignStats:', error);
-            const statusCode = error.message === 'Campaign not found' ? 404 : 500;
-            res.status(statusCode).json({
-                success: false,
-                message: error.message
-            });
-        }
-    }
-
-    /**
-     * Récupère les campagnes actives
-     */
-    async getActiveCampaigns(req, res) {
-        try {
-            const campaigns = await campaignService.getActiveCampaigns();
-
-            res.json({
-                success: true,
-                data: campaigns,
-                count: campaigns.length
-            });
-        } catch (error) {
-            console.error('Error in getActiveCampaigns:', error);
-            res.status(500).json({
-                success: false,
-                message: error.message || 'Erreur lors de la récupération des campagnes actives'
-            });
-        }
+// ===> Création d'une campagne
+export async function createCampaignController(req, res) {
+    try {
+        const data = req.body;
+        const userId = req.params.userId;
+        const campaign = await createCampaign(data, userId);
+        res.status(201).json(campaign);
+    } catch (error) {
+        res.status(error.statusCode || 500).json({ message: error.message });
     }
 }
 
-export default new CampaignController();
+// ===> Récupération d'une campagne par id
+export async function getCampaignbyIdController(req, res) {
+    try {
+        const campaignId = req.params.campaignId;
+        const campaign = await getCampaignbyId(campaignId);
+        res.status(200).json(campaign);
+    } catch (error) {
+        res.status(error.statusCode || 500).json({ message: error.message });
+    }
+}
+
+// ===> Récupération de toutes les campagnes d'un manager (AVEC PAGINATION)
+export async function getManagerCampaignsController(req, res) {
+    try {
+        const { page, limit } = req.query;
+        const managerId = req.params.managerId;
+        const campaigns = await getManagerCampaigns(
+            managerId,
+            parseInt(page) || 1,
+            parseInt(limit) || 10
+        );
+        res.status(200).json(campaigns);
+    } catch (error) {
+        res.status(error.statusCode || 500).json({ message: error.message });
+    }
+}
+
+// ===> Récupération de toutes les campagnes (AVEC PAGINATION)
+export async function getCampaignsController(req, res) {
+    try {
+        const { page, limit } = req.query;
+        const campaigns = await getCampaigns(
+            parseInt(page) || 1,
+            parseInt(limit) || 10
+        );
+        res.status(200).json(campaigns);
+    } catch (error) {
+        res.status(error.statusCode || 500).json({ message: error.message });
+    }
+}
+
+// ===> Récupération des campagnes par catégorie (AVEC PAGINATION)
+export async function getCampaignsByCategoryController(req, res) {
+    try {
+        const { page, limit } = req.query;
+        const categoryId = req.params.categoryId;
+        const campaigns = await getCampaignsByCategory(
+            categoryId,
+            parseInt(page) || 1,
+            parseInt(limit) || 10
+        );
+        res.status(200).json(campaigns);
+    } catch (error) {
+        res.status(error.statusCode || 500).json({ message: error.message });
+    }
+}
+
+// ===> Récupération des campagnes par département (AVEC PAGINATION)
+export async function getCampaignsByDepartmentController(req, res) {
+    try {
+        const { page, limit } = req.query;
+        const department = req.params.department;
+        const campaigns = await getCampaignsByDepartment(
+            department,
+            parseInt(page) || 1,
+            parseInt(limit) || 10
+        );
+        res.status(200).json(campaigns);
+    } catch (error) {
+        res.status(error.statusCode || 500).json({ message: error.message });
+    }
+}
+
+// ===> Modification d'une campagne
+export async function updateCampaignController(req, res) {
+    try {
+        const data = req.body;
+        const campaignId = req.params.campaignId;
+        const campaign = await updateCampaign(campaignId, data);
+        res.status(200).json(campaign);
+    } catch (error) {
+        res.status(error.statusCode || 500).json({ message: error.message });
+    }
+}
+
+// ===> Suppression d'une campagne
+export async function deleteCampaignController(req, res) {
+    try {
+        const campaignId = req.params.campaignId;
+        const result = await deleteCampaign(campaignId);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(error.statusCode || 500).json({ message: error.message });
+    }
+}
+
+// ===> Assignation d'un agent à une campagne
+export async function assignAgentToCampaignController(req, res) {
+    try {
+        const { campaignId, userId } = req.params;
+        const result = await assignAgentToCampaign(campaignId, userId);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(error.statusCode || 500).json({ message: error.message });
+    }
+}
+
+// ===> Assignation d'un vétérinaire à une campagne
+export async function assignVeterinarianToCampaignController(req, res) {
+    try {
+        const { campaignId, userId } = req.params;
+        const result = await assignVeterinarianToCampaign(campaignId, userId);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(error.statusCode || 500).json({ message: error.message });
+    }
+}
+
+// ===> Assignation d'un manager à une campagne
+export async function assignManagerToCampaignController(req, res) {
+    try {
+        const { campaignId, userId } = req.params;
+        const result = await assignManagerToCampaign(campaignId, userId);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(error.statusCode || 500).json({ message: error.message });
+    }
+}
+
+// ===> Assignation d'un comptable à une campagne
+export async function assignComptableToCampaignController(req, res) {
+    try {
+        const { campaignId, userId } = req.params;
+        const result = await assignComptableToCampaign(campaignId, userId);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(error.statusCode || 500).json({ message: error.message });
+    }
+}

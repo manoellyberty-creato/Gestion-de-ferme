@@ -19,7 +19,10 @@ router.use('/users', userRoutes);
 router.use('/animals', animalRoutes);
 
 // Routes des campagnes
-router.use('/campaigns', campaignRoutes);
+router.use("/campaign", campaignsRoutes);
+
+// Routes des alertes
+router.use("/alert", alertsRoutes);
 
 // Routes de l'alimentation
 router.use('/feed', feedRoutes);

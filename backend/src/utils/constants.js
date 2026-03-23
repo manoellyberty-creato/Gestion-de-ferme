@@ -1,10 +1,10 @@
-<<<<<<< HEAD
+
 // Constantes utilisées dans l'application de gestion de ferme
 
 // === RÔLES UTILISATEURS ===
 export const USER_ROLES = {
     ADMIN: 'admin',
-    RESPONSABLE: 'responsable',
+    RESPONSABLE: 'manager',
     VETERINAIRE: 'veterinaire',
     COMPTABLE: 'comptable',
     AGENT: 'agent'
@@ -198,40 +198,4 @@ export const SUCCESS_MESSAGES = {
     UPDATED: 'Ressource mise à jour avec succès',
     DELETED: 'Ressource supprimée avec succès',
     OPERATION_SUCCESSFUL: 'Opération réalisée avec succès'
-=======
-// Rôles utilisateur
-export const USER_ROLES = {
-  ADMIN: 'admin',
-  RESPONSABLE: 'responsable',
-  AGENT: 'agent',
-  VETERINAIRE: 'veterinaire',
-  COMPTABLE: 'comptable'
-};
-
-// Départements
-export const DEPARTMENTS = {
-  VOLAILLE: 'volaille',
-  BETAIL: 'betail',
-  PISCICULTURE: 'pisciculture'
-};
-
-// Objectifs de campagne
-export const CAMPAIGN_GOALS = {
-  PRODUCTION: 'production',
-  VENTE: 'vente'
-};
-
-// Statuts d'animal
-export const ANIMAL_STATUS = {
-  VIVANT: 'vivant',
-  MORT: 'mort',
-  VENDU: 'vendu'
-};
-
-// Statuts de campagne
-export const CAMPAIGN_STATUS = {
-  PREPARATION: 'en_preparation',
-  EN_COURS: 'en_cours',
-  TERMINEE: 'terminee'
->>>>>>> f82ca8b879bade927cbe40981c563525da2783d7
-};
+}

@@ -8,7 +8,9 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node --watch src/server.js"
+    "start": "node --watch src/server.js",
+    "seed:category": "node src/seeders/category.seeder.js",
+    "seed:departement": "node src/seeders/departement.seeder.js"
   },
   "keywords": [],
   "author": "",

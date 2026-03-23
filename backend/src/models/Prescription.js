@@ -1,6 +1,5 @@
-// Schéma pour les prescriptions médicales des animaux
 import mongoose from 'mongoose';
-
+ 
 const prescriptionSchema = new mongoose.Schema({
     // Référence à l'animal concerné
     animal: {
@@ -93,11 +92,11 @@ const prescriptionSchema = new mongoose.Schema({
         notes: { type: String, default: '' },
     }],
 }, { timestamps: true });
-
+ 
 // Index pour optimiser les requêtes
 prescriptionSchema.index({ animal: 1, status: 1 });
 prescriptionSchema.index({ campaign: 1, prescriptionDate: 1 });
 prescriptionSchema.index({ veterinarian: 1, prescriptionDate: -1 });
-
+ 
 const Prescription = mongoose.model('Prescription', prescriptionSchema);
 export default Prescription;

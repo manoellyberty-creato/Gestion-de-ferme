@@ -1,87 +1,74 @@
-// Schéma pour les animaux individuels
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
+import { ANIMAL_STATUS } from "../utils/constants.js";
 
-const animalSchema = new mongoose.Schema({
-    // Nom de l'animal
-    name: {
-        type: String,
-        required: true,
+const animalSchema = new mongoose.Schema(
+  {
+    campaignId: {
+      type: String,
+      required: true
     },
-    // Numéro de tag/identification
-    tagNumber: {
-        type: String,
-        required: true,
-        unique: true,
+    qrCode: {
+      type: String,
+      required: true
     },
-    // Espèce
-    species: {
-        type: String,
-        enum: ['poultry', 'cattle', 'fish', 'pigeon', 'duck', 'guinea_fowl', 'chicken', 'dairy_cattle', 'beef_cattle', 'sheep'],
-        required: true,
+    initialWeight: {
+      type: Number,
+      required: true,
+      min: 0
     },
-    // Race/souche
-    breed: {
-        type: String,
-        required: true,
+    currentWeight: {
+      type: Number,
+      default: null,
+      min: 0
     },
-    // Sexe
-    gender: {
-        type: String,
-        enum: ['male', 'female'],
-        required: true,
-    },
-    // Date de naissance
-    birthDate: {
-        type: Date,
-        required: true,
-    },
-    // Poids actuel en kg
-    weight: {
-        type: Number,
-        min: 0,
-    },
-    // Statut de santé général
-    healthStatus: {
-        type: String,
-        enum: ['healthy', 'sick', 'critical', 'recovered'],
-        default: 'healthy',
-    },
-    // Référence à la campagne
-    campaign: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Campaign',
-        required: true,
-    },
-    // Statut (actif, vendu, mort, etc.)
     status: {
-        type: String,
-        enum: ['active', 'sold', 'dead', 'culled'],
-        default: 'active',
+      type: String,
+      enum: Object.values(ANIMAL_STATUS),
+      default: ANIMAL_STATUS.VIVANT
     },
-    // Prix d'achat
-    purchasePrice: {
-        type: Number,
-        min: 0,
+    dateOfBirth: {
+      type: Date,
+      required: true
     },
-    // Prix de vente (si vendu)
-    salePrice: {
-        type: Number,
-        min: 0,
+    entryDate: {
+      type: Date,
+      default: Date.now
     },
-    // Date de vente
-    saleDate: {
+    exitDate: {
+      type: Date,
+      default: null
+    },
+    exitReason: {
+      type: String,
+      enum: ['mort', 'vendu', 'fin_cycle'],
+      default: null
+    },
+    growthHistory: [{
+      date: {
         type: Date,
-    },
-    // Notes supplémentaires
-    notes: {
+        default: Date.now
+      },
+      weight: {
+        type: Number,
+        required: true,
+        min: 0
+      },
+      notes: {
         type: String,
-        default: '',
-    },
-}, { timestamps: true });
+        default: ""
+      }
+    }],
+    metadata: {
+      type: mongoose.Schema.Types.Mixed
+    }
+  },
+  { timestamps: true }
+);
 
-// Index pour optimiser les requêtes
-animalSchema.index({ campaign: 1, species: 1 });
-animalSchema.index({ status: 1 });
+// Index
+// animalSchema.index({ campaignId: 1 });
+// animalSchema.index({ qrCode: 1 }, { unique: true });
+// animalSchema.index({ status: 1 });
+// animalSchema.index({ campaignId: 1, status: 1 });
 
-const Animal = mongoose.model('Animal', animalSchema);
-export default Animal;
+export default mongoose.model("Animal", animalSchema);

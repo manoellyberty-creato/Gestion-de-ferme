@@ -1,79 +1,108 @@
-// Schéma pour les campagnes d'élevage
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
+import { CAMPAIGN_STATUS, CAMPAIGN_GOALS } from "../utils/constants.js";
 
-const campaignSchema = new mongoose.Schema({
-    // Nom de la campagne
+const campaignSchema = new mongoose.Schema(
+  {
     name: {
-        type: String,
-        required: true,
+      type: String,
+      required: true,
+      trim: true,
     },
-    // Description
-    description: {
-        type: String,
-        required: true,
+
+    categoryId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      required: true
     },
-    // Type d'élevage
-    type: {
-        type: String,
-        enum: ['poultry', 'cattle', 'fish', 'mixed'],
-        required: true,
+
+    managerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true
     },
-    // Date de début
+    department: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Department",
+      required: true
+    },
+
     startDate: {
-        type: Date,
-        required: true,
+      type: Date,
+      required: true
     },
-    // Date de fin prévue
-    endDate: {
-        type: Date,
-        required: true,
+
+    expectedEndDate: {
+      type: Date,
+      required: true
     },
-    // Date de fin réelle
+
     actualEndDate: {
-        type: Date,
+      type: Date,
+      default: null
     },
-    // Statut de la campagne
+
     status: {
-        type: String,
-        enum: ['planning', 'active', 'completed', 'cancelled'],
-        default: 'planning',
+      type: String,
+      enum: Object.values(CAMPAIGN_STATUS),
+      default: CAMPAIGN_STATUS.PREPARATION
     },
-    // Responsable de la campagne
-    manager: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true,
+
+    goal: {
+      type: String,
+      enum: Object.values(CAMPAIGN_GOALS),
+      required: true
     },
-    // Budget prévu
+
+    goalMetrics: {
+      targetWeight: Number,
+      targetAge: Number,
+      targetPrice: Number,
+      targetVolume: Number,
+      qualityStandards: String
+    },
+
     budget: {
-        type: Number,
-        min: 0,
+      type: Number,
+      required: true,
+      min: 0
     },
-    // Objectifs de production
-    targets: {
-        animalCount: { type: Number, min: 0 },
-        averageWeight: { type: Number, min: 0 },
-        expectedRevenue: { type: Number, min: 0 },
+
+    totalCost: {
+      type: Number,
+      default: 0
     },
-    // Localisation
-    location: {
-        farm: { type: String },
-        sector: { type: String },
-        coordinates: {
-            latitude: { type: Number },
-            longitude: { type: Number },
+
+    assignedAgents: [
+      {
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User"
         },
-    },
-    // Notes supplémentaires
+        assignedAt: {
+          type: Date,
+          default: Date.now
+        },
+        role: {
+          type: String,
+          enum: ["agent","manager","veterinaire","comptable"],
+          required: true
+        }
+      }
+    ],
+
     notes: {
-        type: String,
-        default: '',
-    },
-}, { timestamps: true });
+      type: String,
+      default: ""
+    }
+  },
+  { timestamps: true }
+);
 
-// Index pour optimiser les requêtes
-campaignSchema.index({ status: 1, startDate: -1 });
-campaignSchema.index({ manager: 1 });
+// Index
+campaignSchema.index({ name: 1 }, { unique: true })
+// campaignSchema.index({ categoryId: 1 });
+// campaignSchema.index({ managerId: 1 });
+// campaignSchema.index({ status: 1 });
+// campaignSchema.index({ goal: 1 });
 
-const Campaign = mongoose.model('Campaign', campaignSchema);
-export default Campaign;
+export default mongoose.model("Campaign", campaignSchema);
