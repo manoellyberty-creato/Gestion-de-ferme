@@ -10,6 +10,14 @@ export const USER_ROLES = {
     AGENT: 'agent'
 };
 
+// === STATUTS DES ANIMAUX ===
+export const ANIMAL_STATUS = {
+    VIVANT: 'vivant',
+    MORT: 'mort',
+    VENDU: 'vendu',
+    FIN_CYCLE: 'fin_cycle'
+};
+
 // === TYPES DE PRODUITS DE SANTÉ ===
 export const HEALTH_PRODUCT_TYPES = {
     VACCINE: 'vaccine',
@@ -87,11 +95,32 @@ export const TRANSACTION_STATUSES = {
 };
 
 // === STATUTS DES CAMPAGNES ===
-export const CAMPAIGN_STATUSES = {
+export const CAMPAIGN_STATUS = {
+    PREPARATION: 'preparation',
     PLANNING: 'planning',
     ACTIVE: 'active',
     COMPLETED: 'completed',
     CANCELLED: 'cancelled'
+};
+
+// Maintien de compatibilité
+export const CAMPAIGN_STATUSES = CAMPAIGN_STATUS;
+
+// === DÉPARTEMENTS ===
+export const DEPARTMENTS = {
+    PRODUCTION: 'production',
+    HEALTH: 'health',
+    FINANCE: 'finance',
+    OPERATIONS: 'operations',
+    LOGISTICS: 'logistics'
+};
+
+// === OBJECTIFS DES CAMPAGNES ===
+export const CAMPAIGN_GOALS = {
+    PRODUCTIVITY: 'productivity',
+    SUSTAINABILITY: 'sustainability',
+    PROFITABILITY: 'profitability',
+    MARKET_EXPANSION: 'market_expansion'
 };
 
 // === UNITÉS DE MESURE ===

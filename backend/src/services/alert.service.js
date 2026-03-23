@@ -1,14 +1,70 @@
 import mongoose from "mongoose";
 import Animal from "../models/Animal.js";
 import Prescription from "../models/Prescription.js";
+import Alert from "../models/Alert.js";
 
-export async function detectAlerts(campaignId) {
-    const alerts = [];
-    if (!mongoose.Types.ObjectId.isValid(campaignId)) {
-        return { campaignId, alerts, error: "ID de campagne invalide" };
+class AlertService {
+    // Récupérer toutes les alertes
+    async getAllAlerts(filters = {}) {
+        try {
+            return await Alert.find(filters).sort({ createdAt: -1 });
+        } catch (error) {
+            throw new Error(`Erreur lors de la récupération des alertes: ${error.message}`);
+        }
     }
-    const validCampaignId = new mongoose.Types.ObjectId(campaignId);
-    const animals = await Animal.find({ campaignId: validCampaignId });
+
+    // Récupérer une alerte par ID
+    async getAlertById(id) {
+        try {
+            const alert = await Alert.findById(id);
+            if (!alert) throw new Error('Alerte non trouvée');
+            return alert;
+        } catch (error) {
+            throw new Error(`Erreur: ${error.message}`);
+        }
+    }
+
+    // Créer une alerte
+    async createAlert(alertData) {
+        try {
+            const alert = new Alert(alertData);
+            await alert.save();
+            return alert;
+        } catch (error) {
+            throw new Error(`Erreur lors de la création: ${error.message}`);
+        }
+    }
+
+    // Marquer une alerte comme lue
+    async markAsRead(id) {
+        try {
+            const alert = await Alert.findByIdAndUpdate(id, { read: true }, { new: true });
+            if (!alert) throw new Error('Alerte non trouvée');
+            return alert;
+        } catch (error) {
+            throw new Error(`Erreur: ${error.message}`);
+        }
+    }
+
+    // Supprimer une alerte
+    async deleteAlert(id) {
+        try {
+            const alert = await Alert.findByIdAndDelete(id);
+            if (!alert) throw new Error('Alerte non trouvée');
+            return alert;
+        } catch (error) {
+            throw new Error(`Erreur: ${error.message}`);
+        }
+    }
+
+    // Générer des alertes automatiques pour une campagne
+    async generateAutomatedAlerts(campaignId) {
+        const alerts = [];
+        if (!mongoose.Types.ObjectId.isValid(campaignId)) {
+            return { campaignId, alerts, error: "ID de campagne invalide" };
+        }
+        const validCampaignId = new mongoose.Types.ObjectId(campaignId);
+        const animals = await Animal.find({ campaign: validCampaignId });
     const totalAnimals = animals.length;
 
     if (totalAnimals === 0) {
@@ -82,3 +138,6 @@ export async function detectAlerts(campaignId) {
         generatedAt: new Date()
     };
 }
+}
+
+export default new AlertService();

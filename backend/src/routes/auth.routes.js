@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as authCtrl from '../controllers/auth.controller.js';
-import requireAuth from '../middleware/requireAuth.js';
-import requireRole from '../middleware/requireRole.js'; // Import du petit nouveau
+import requireAuth from '../middlewares/requireAuth.js';
+import requireRole from '../middlewares/requireRole.js'; // Import du petit nouveau
 
 const router = Router();
 

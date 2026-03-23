@@ -1,8 +1,8 @@
 // Routes pour les rapports financiers et analyses
 import express from 'express';
 import reportController from '../controllers/report.controller.js';
-import requireAuth from '../middleware/requireAuth.js';
-import requireRole from '../middleware/requireRole.js';
+import requireAuth from '../middlewares/requireAuth.js';
+import requireRole from '../middlewares/requireRole.js';
 const router = express.Router();
 
 // Toutes les routes nécessitent une authentification

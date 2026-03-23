@@ -1,6 +1,7 @@
 // Routes pour la gestion des animaux
 import express from 'express';
 import animalController from '../controllers/animal.controller.js';
+
 const router = express.Router();
 
 // Route pour récupérer tous les animaux

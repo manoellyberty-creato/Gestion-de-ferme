@@ -7,6 +7,7 @@ import feedRoutes from './feed.routes.js';
 import healthRoutes from './health.routes.js';
 import reportRoutes from './reports.routes.js';
 import meRoutes from './me.routes.js';
+import alertRoutes from './alerts.routes.js';
 import { Router } from 'express';
 const router = Router();
  
@@ -19,10 +20,10 @@ router.use('/users', userRoutes);
 router.use('/animals', animalRoutes);
 
 // Routes des campagnes
-router.use("/campaign", campaignsRoutes);
+router.use("/campaign", campaignRoutes);
 
 // Routes des alertes
-router.use("/alert", alertsRoutes);
+router.use("/alerts", alertRoutes);
 
 // Routes de l'alimentation
 router.use('/feed', feedRoutes);

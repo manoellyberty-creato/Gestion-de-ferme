@@ -46,6 +46,11 @@ const alertSchema = new mongoose.Schema(
     resolvedAt: {
       type: Date,
       default: null
+    },
+
+    read: {
+      type: Boolean,
+      default: false
     }
   },
   { timestamps: true }
