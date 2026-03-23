@@ -1,283 +1,105 @@
-// Contrôleur pour la gestion des animaux
-import animalService from '../services/animal.service.js';
-import QRCodeService from '../services/qrCode.service.js';
+// Animal individual management controller
+import * as animalService from "../services/animal.service.js";
 
-class AnimalController {
-    /**
-     * Récupère tous les animaux
-     */
-    async getAllAnimals(req, res) {
-        try {
-            const filters = req.query;
-            const animals = await animalService.getAllAnimals(filters);
-
-            res.json({
-                success: true,
-                data: animals,
-                count: animals.length
-            });
-        } catch (error) {
-            console.error('Error in getAllAnimals:', error);
-            res.status(500).json({
-                success: false,
-                message: error.message || 'Erreur lors de la récupération des animaux'
-            });
-        }
-    }
-
-    /**
-     * Récupère un animal par son ID
-     */
-    async getAnimalById(req, res) {
-        try {
-            const { id } = req.params;
-            const animal = await animalService.getAnimalById(id);
-
-            res.json({
-                success: true,
-                data: animal
-            });
-        } catch (error) {
-            console.error('Error in getAnimalById:', error);
-            const statusCode = error.message === 'Animal not found' ? 404 : 500;
-            res.status(statusCode).json({
-                success: false,
-                message: error.message
-            });
-        }
-    }
-
-    /**
-     * Crée un nouvel animal
-     */
-    async createAnimal(req, res) {
-        try {
-            const animalData = req.body;
-            const animal = await animalService.createAnimal(animalData);
-
-            res.status(201).json({
-                success: true,
-                data: animal,
-                message: 'Animal créé avec succès'
-            });
-        } catch (error) {
-            console.error('Error in createAnimal:', error);
-            const statusCode = error.message.includes('not found') || error.message.includes('already exists') ? 400 : 500;
-            res.status(statusCode).json({
-                success: false,
-                message: error.message
-            });
-        }
-    }
-
-    /**
-     * Met à jour un animal
-     */
-    async updateAnimal(req, res) {
-        try {
-            const { id } = req.params;
-            const updateData = req.body;
-            const animal = await animalService.updateAnimal(id, updateData);
-
-            res.json({
-                success: true,
-                data: animal,
-                message: 'Animal mis à jour avec succès'
-            });
-        } catch (error) {
-            console.error('Error in updateAnimal:', error);
-            const statusCode = error.message === 'Animal not found' || error.message.includes('already exists') ? 400 : 500;
-            res.status(statusCode).json({
-                success: false,
-                message: error.message
-            });
-        }
-    }
-
-    /**
-     * Supprime un animal
-     */
-    async deleteAnimal(req, res) {
-        try {
-            const { id } = req.params;
-            await animalService.deleteAnimal(id);
-
-            res.json({
-                success: true,
-                message: 'Animal supprimé avec succès'
-            });
-        } catch (error) {
-            console.error('Error in deleteAnimal:', error);
-            const statusCode = error.message === 'Animal not found' ? 404 : 500;
-            res.status(statusCode).json({
-                success: false,
-                message: error.message
-            });
-        }
-    }
-
-    /**
-     * Génère un QR code pour un animal
-     */
-    async generateAnimalQRCode(req, res) {
-        try {
-            const { id } = req.params;
-            const qrCode = await QRCodeService.generateAnimalQRCode(id);
-
-            res.json({
-                success: true,
-                data: {
-                    animalId: id,
-                    qrCode: qrCode
-                }
-            });
-        } catch (error) {
-            console.error('Error in generateAnimalQRCode:', error);
-            res.status(500).json({
-                success: false,
-                message: error.message || 'Erreur lors de la génération du QR code'
-            });
-        }
-    }
-
-    /**
-     * Scanne un QR code d'animal
-     */
-    async scanAnimalQRCode(req, res) {
-        try {
-            const { tagNumber } = req.params;
-            const animal = await animalService.getAnimalByTagNumber(tagNumber);
-
-            res.json({
-                success: true,
-                data: animal
-            });
-        } catch (error) {
-            console.error('Error in scanAnimalQRCode:', error);
-            const statusCode = error.message === 'Animal not found' ? 404 : 500;
-            res.status(statusCode).json({
-                success: false,
-                message: error.message
-            });
-        }
-    }
-
-    /**
-     * Met à jour le poids d'un animal via QR code
-     */
-    async updateAnimalWeight(req, res) {
-        try {
-            const { tagNumber } = req.params;
-            const { weight } = req.body;
-
-            if (!weight || weight <= 0) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Poids invalide'
-                });
-            }
-
-            const animal = await animalService.updateAnimalWeight(tagNumber, weight);
-
-            res.json({
-                success: true,
-                data: animal,
-                message: 'Poids mis à jour avec succès'
-            });
-        } catch (error) {
-            console.error('Error in updateAnimalWeight:', error);
-            const statusCode = error.message === 'Animal not found' ? 404 : 500;
-            res.status(statusCode).json({
-                success: false,
-                message: error.message
-            });
-        }
-    }
-
-    /**
-     * Met à jour le statut d'un animal via QR code
-     */
-    async updateAnimalStatus(req, res) {
-        try {
-            const { tagNumber } = req.params;
-            const { status, salePrice, saleDate } = req.body;
-
-            const validStatuses = ['active', 'sold', 'dead', 'culled'];
-            if (!validStatuses.includes(status)) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Statut invalide'
-                });
-            }
-
-            const animal = await animalService.updateAnimalStatus(tagNumber, status, { salePrice, saleDate });
-
-            res.json({
-                success: true,
-                data: animal,
-                message: 'Statut mis à jour avec succès'
-            });
-        } catch (error) {
-            console.error('Error in updateAnimalStatus:', error);
-            const statusCode = error.message === 'Animal not found' ? 404 : 500;
-            res.status(statusCode).json({
-                success: false,
-                message: error.message
-            });
-        }
-    }
-
-    /**
-     * Récupère l'historique d'un animal
-     */
-    async getAnimalHistory(req, res) {
-        try {
-            const { tagNumber } = req.params;
-            const animal = await animalService.getAnimalByTagNumber(tagNumber);
-
-            // Pour l'instant, on retourne juste les infos de base
-            // Plus tard, on pourra ajouter un système d'historique complet
-            const history = {
-                animal: animal,
-                lastUpdated: animal.updatedAt,
-                statusHistory: [animal.status], // À développer
-                weightHistory: animal.weight ? [animal.weight] : [] // À développer
-            };
-
-            res.json({
-                success: true,
-                data: history
-            });
-        } catch (error) {
-            console.error('Error in getAnimalHistory:', error);
-            const statusCode = error.message === 'Animal not found' ? 404 : 500;
-            res.status(statusCode).json({
-                success: false,
-                message: error.message
-            });
-        }
-    }
-
-    /**
-     * Récupère les statistiques des animaux pour une campagne
-     */
-    async getCampaignAnimalStats(req, res) {
-        try {
-            const { campaignId } = req.params;
-            const stats = await animalService.getCampaignAnimalStats(campaignId);
-
-            res.json({
-                success: true,
-                data: stats
-            });
-        } catch (error) {
-            console.error('Error in getCampaignAnimalStats:', error);
-            res.status(500).json({
-                success: false,
-                message: error.message || 'Erreur lors de la récupération des statistiques'
-            });
-        }
+    //creer et enregistrer un animal (mes amis)
+export async function createAnimal(req, res , next){
+    try {
+        const animal = await animalService.createAnimal(req.body)
+        res.status(201).json(animal)
+    } catch (error) {
+        next(error)
     }
 }
 
-export default new AnimalController();
+//récupérer tous les animaux d'une campagne
+export async function getAnimalsByCampaign(req ,  res , next) {
+    try {
+        const animals = await animalService.getAnimalsByCampaign(req.params.campaignId)
+        res.status(200).json(animals)
+        
+    } catch (error) {
+        next (error)
+        
+    }
+    
+}
+
+//récupèrer un animal pas son ID
+export async function getAnimalById(req , res , next ){
+    try {
+        const animal= await animalService.getAnimalById(req.params.id)
+        if(!animal){
+            return res.status(404).json({error:{message:"Animal not found"}})
+        }
+        res.status(200).json(animal)
+        
+    } catch (error) {
+        next(error)
+        
+    }
+}
+
+//modifier un animal (mettre a jour)
+export async function updateAnimalById(req, res , next){
+    try {
+        const animal = await animalService.updateAnimal(req.params.id , req.body) 
+        if (!animal){
+            return res.status(404).json({error:{message:"Animal not found"}})
+        }  
+        res.status(200).json(animal)   
+    } catch (error) {
+        next(error)
+        
+    }
+}
+
+//ajouter une donnée dans l'historique de l'animal
+export async function addGrowthRecord(req, res, next) {
+    try {
+        const animal = await animalService.addGrowthRecord(req.params.id, req.body);
+        if (!animal) return res.status(404).json({ error: { message: 'Animal not found' } });
+        res.status(200).json(animal);
+    } catch (error) {
+        next(error);
+    }
+}
+
+
+//mentionner la sortie d'un animal
+export async function exitAnimal(req, res, next) {
+    try {
+        const animal = await animalService.exitAnimal(req.params.id, req.body);
+        if (!animal) return res.status(404).json({ error: { message: 'Animal not found' } });
+        res.status(200).json(animal);
+    } catch (error) {
+        next(error);
+    }
+}
+
+//récuperer un animal pas son code QR
+export async function getAnimalByQrCode(req , res , next){
+    try {
+        const animal= await animalService.getAnimalByQrCode(req.params.qrCode)
+        if(!animal){
+          return  res.status(404).json({error:{message:'Animal not found'}})    
+        }
+        res.status(200).json(animal)
+        
+    } catch (error) {
+        next(error)
+    }
+}
+
+//supprimer un animal 
+export async function deleteAnimal(req , res , next ){
+    try {
+        const animal = await animalService.deleteAnimal(req.params.id)
+        if(!animal){
+          return  res.status(404).json({error:{message:'Animal not found'}})    
+        }
+        res.status(200).json(animal)
+        
+    } catch (error) {
+        next (error)
+    }
+}
