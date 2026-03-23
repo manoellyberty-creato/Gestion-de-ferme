@@ -123,7 +123,7 @@ export const DOSAGE_FREQUENCIES = {
 
 // === DEVISES ===
 export const CURRENCIES = {
-    XAF: 'XAF', // Franc CFA
+    XOF: 'XOF', // Franc CFA
     EUR: 'EUR',
     USD: 'USD'
 };
