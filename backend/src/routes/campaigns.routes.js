@@ -35,7 +35,7 @@ router.get("/category/:categoryId", getCampaignsByCategoryController);
 router.get("/department/:department", getCampaignsByDepartmentController);
 
 // ===> Modification d'une campagne
-router.put("/update/:campaignId", updateCampaignController);
+router.patch("/update/:campaignId", updateCampaignController);
 
 // ===> Suppression d'une campagne
 router.delete("/delete/:campaignId", deleteCampaignController);

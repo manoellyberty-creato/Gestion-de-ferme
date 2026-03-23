@@ -10,7 +10,7 @@ const campaignSchema = new mongoose.Schema(
     },
 
     categoryId: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
       required: true
     },
@@ -18,6 +18,11 @@ const campaignSchema = new mongoose.Schema(
     managerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      required: true
+    },
+    department: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Department",
       required: true
     },
 
@@ -79,7 +84,7 @@ const campaignSchema = new mongoose.Schema(
         },
         role: {
           type: String,
-          enum: ["agent", "veterinaire"],
+          enum: ["agent","manager","veterinaire","comptable"],
           required: true
         }
       }

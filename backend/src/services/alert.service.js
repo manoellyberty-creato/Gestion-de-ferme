@@ -1,20 +1,24 @@
+import mongoose from "mongoose";
 import Animal from "../models/Animal.js";
-import prescriptionSchema from "../models/Prescription.js";
+import Prescription from "../models/Prescription.js";
 
-// ===> SERVICE : DETECTION ALERTES
 export async function detectAlerts(campaignId) {
     const alerts = [];
-    
-    // ===> Récupération des animaux
-    const animals = await Animal.find({ campaignId });
+    if (!mongoose.Types.ObjectId.isValid(campaignId)) {
+        return { campaignId, alerts, error: "ID de campagne invalide" };
+    }
+    const validCampaignId = new mongoose.Types.ObjectId(campaignId);
+    const animals = await Animal.find({ campaignId: validCampaignId });
     const totalAnimals = animals.length;
+
     if (totalAnimals === 0) {
-        return { alerts };
+        return { campaignId, alerts };
     }
 
     // ===> ALERTE MORTALITÉ
     const deadAnimals = animals.filter(a => a.status === "mort").length;
     const mortalityRate = (deadAnimals / totalAnimals) * 100;
+
     if (mortalityRate >= 10) {
         alerts.push({
             type: "mortality",
@@ -26,12 +30,15 @@ export async function detectAlerts(campaignId) {
     // ===> ALERTE PERTE DE POIDS
     let weightLossCount = 0;
     animals.forEach(animal => {
-        if (animal.growthHistory.length >= 2) {
-            const last = animal.growthHistory.at(-1).weight;
-            const previous = animal.growthHistory.at(-2).weight;
-            const lossPercent = ((previous - last) / previous) * 100;
-            if (lossPercent >= 15) {
-                weightLossCount++;
+        if (animal.growthHistory && animal.growthHistory.length >= 2) {
+            const last = animal.growthHistory[animal.growthHistory.length - 1].weight;
+            const previous = animal.growthHistory[animal.growthHistory.length - 2].weight;
+
+            if (previous > 0) {
+                const lossPercent = ((previous - last) / previous) * 100;
+                if (lossPercent >= 15) {
+                    weightLossCount++;
+                }
             }
         }
     });
@@ -45,32 +52,33 @@ export async function detectAlerts(campaignId) {
         });
     }
 
-    // ===> ALERTE MALADIE CONTAGIEUSE
-    const recentPrescriptions = await prescriptionSchema.find({
-        campaignId,
+    // ===> ALERTE MALADIE CONTAGIEUSE (Dernières 72h)
+    const recentPrescriptions = await Prescription.find({
+        campaignId: validCampaignId,
         createdAt: {
-            $gte: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)        
+            $gte: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
         }
     });
-    const diseaseMap = {};
+
+    const medicationMap = {};
     recentPrescriptions.forEach(p => {
-        const key = p.medication.name;
-        diseaseMap[key] = (diseaseMap[key] || 0) + 1;
+        const medName = p.medication?.name || "Médicament inconnu";
+        medicationMap[medName] = (medicationMap[medName] || 0) + 1;
     });
 
-    for (const disease in diseaseMap) {
-        if (diseaseMap[disease] >= 5) {
+    for (const medName in medicationMap) {
+        if (medicationMap[medName] >= 5) {
             alerts.push({
                 type: "disease",
                 level: "danger",
-                message: `Suspicion de maladie contagieuse : ${disease}`
+                message: `Alerte sanitaire : ${medicationMap[medName]} prescriptions de ${medName} en 72h.`
             });
         }
     }
 
-    // ===> RESULTAT
     return {
         campaignId,
-        alerts
+        alerts,
+        generatedAt: new Date()
     };
 }

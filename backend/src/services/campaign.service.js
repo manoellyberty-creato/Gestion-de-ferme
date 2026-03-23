@@ -2,12 +2,15 @@ import Campaign from "../models/Campaign.js";
 import Category from "../models/Category.js";
 import User from "../models/User.js";
 import Animal from "../models/Animal.js";
+import Department from "../models/Departement.js";
+import mongoose from "mongoose";
 
 // ===> Création d'une campagne
 export async function createCampaign(data, userId) {
     const {
         name,
         categoryId,
+        department,
         startDate,
         expectedEndDate,
         goal,
@@ -16,38 +19,17 @@ export async function createCampaign(data, userId) {
     } = data;
 
     //=== Validation des champs
-    if (!name || !categoryId || !startDate || !expectedEndDate || !goal || budget == null || !goalMetrics) {
+    if (!name || !categoryId || !startDate || !expectedEndDate ||
+        !goal || budget == null || !goalMetrics || !department) {
         const error = new Error("Tous les champs sont requis");
         error.statusCode = 400;
         throw error;
     }
 
-    // === Vérification de la catégorie
-    const category = await Category.findById(categoryId);
-    if (!category) {
-        const error = new Error("La catégorie n'existe pas");
-        error.statusCode = 404;
-        throw error;
-    }
-
-    // === Vérification de dates
-    const start = new Date(startDate);
-    const end = new Date(expectedEndDate);
-    if (start >= end) {
-        const error = new Error("La date de début doit être avant la fin");
-        error.statusCode = 400;
-        throw error;
-    }
-    if (start < new Date()) {
-        const error = new Error("La date de début ne peut pas être dans le passé");
-        error.statusCode = 400;
-        throw error;
-    }
-
-    // === Vérification du manager
-    const manager = await User.findById(userId);
-    if (!manager) {
-        const error = new Error("Le manager n'existe pas");
+    // === Vérification du département
+    const existingDepartment = await Department.findById(department);
+    if (!existingDepartment) {
+        const error = new Error("Le département n'existe pas");
         error.statusCode = 404;
         throw error;
     }
@@ -56,6 +38,7 @@ export async function createCampaign(data, userId) {
     const campaign = await Campaign.create({
         name,
         categoryId,
+        department,
         managerId: userId,
         startDate,
         expectedEndDate,
@@ -63,6 +46,7 @@ export async function createCampaign(data, userId) {
         budget,
         goalMetrics
     });
+
     return campaign;
 }
 
@@ -74,14 +58,7 @@ export async function getCampaignbyId(campaignId) {
         error.statusCode = 404;
         throw error;
     }
-    return campaigns.map(c => ({
-        id: c._id,
-        name: c.name,
-        category: c.categoryId,
-        department: c.department,
-        startDate: c.startDate,
-        endDate: c.endDate
-    }));
+    return campaign;
 }
 
 // ===> Récupération de toutes les campagnes d'un manager (AVEC PAGINATION)
@@ -91,14 +68,7 @@ export async function getManagerCampaigns(managerId, page = 1, limit = 10) {
         .skip((page - 1) * limit)
         .limit(limit);
 
-    return campaigns.map(c => ({
-        id: c._id,
-        name: c.name,
-        category: c.categoryId,
-        department: c.department,
-        startDate: c.startDate,
-        endDate: c.endDate
-    }));
+    return campaigns
 }
 
 // ===> Récupération de toutes les campagnes (AVEC PAGINATION)
@@ -108,50 +78,49 @@ export async function getCampaigns(page = 1, limit = 10) {
         .skip((page - 1) * limit)
         .limit(limit);
 
-    return campaigns.map(c => ({
-        id: c._id,
-        name: c.name,
-        category: c.categoryId,
-        department: c.department,
-        startDate: c.startDate,
-        endDate: c.endDate
-    }))
+    return campaigns
 }
 
 // ===> Récupération des campagnes par catégorie (AVEC PAGINATION)
 export async function getCampaignsByCategory(categoryId, page = 1, limit = 10) {
-    const campaigns = await Campaign.find({ categoryId })
-        .sort({ createdAt: -1 })
-        .skip((page - 1) * limit)
-        .limit(limit);
-
-    return campaigns.map(c => ({
-        id: c._id,
-        name: c.name,
-        category: c.categoryId,
-        department: c.department,
-        startDate: c.startDate,
-        endDate: c.endDate
-    }));
+    try {
+        const validCategoryId = new mongoose.Types.ObjectId(categoryId);
+        const campaigns = await Campaign.find({ categoryId: validCategoryId })
+            .populate("department")
+            .populate("categoryId")
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit);
+        return campaigns;
+    } catch (error) {
+        console.error("Erreur getCampaignsByCategory:", error);
+        throw error;
+    }
 }
 
 // ===> Récupération des campagnes par département (AVEC PAGINATION)
 export async function getCampaignsByDepartment(department, page = 1, limit = 10) {
-
-    // === Trouver les catégories du département
-    const categories = await Category.find({ department });
-
-    const categoryIds = categories.map(c => c._id.toString());
-
-    // === Trouver les campagnes liées
-    const campaigns = await Campaign.find({
-        categoryId: { $in: categoryIds }
-    })
-        .sort({ createdAt: -1 })
-        .skip((page - 1) * limit)
-        .limit(limit);
-
-    return campaigns;
+    try {
+        if (!mongoose.Types.ObjectId.isValid(department)) {
+            return [];
+        }
+        const deptId = new mongoose.Types.ObjectId(department);
+        const categories = await Category.find({ department: deptId });
+        if (categories.length === 0) return [];
+        const categoryIds = categories.map(c => c._id);
+        const campaigns = await Campaign.find({
+            categoryId: { $in: categoryIds }
+        })
+            .populate("categoryId")
+            .populate("department")
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit);
+        return campaigns;
+    } catch (error) {
+        console.error("Erreur getCampaignsByDepartment:", error);
+        throw error;
+    }
 }
 
 // ===> Modification d'une campagne
@@ -249,25 +218,40 @@ export async function assignManagerToCampaign(campaignId, userId) {
         throw error;
     }
 
-    // === Vérification de l'agent
+    if (campaign.assignedAgents.some(a => a.role === "manager")) {
+        const error = new Error("Un manager est déjà assigné à cette campagne");
+        error.statusCode = 400;
+        throw error;
+    }
+
+    if (campaign.assignedAgents.some(a => a.userId.toString() === userId.toString())) {
+        const error = new Error("Cet utilisateur est déjà assigné à cette campagne");
+        error.statusCode = 400;
+        throw error;
+    }
+
     const manager = await User.findById(userId);
     if (!manager) {
-        const error = new Error("L'agent n'existe pas");
+        const error = new Error("L'utilisateur n'existe pas");
         error.statusCode = 404;
         throw error;
     }
-    if(manager.role !== "manager"){
-        const error = new Error("L'utilisateur n'est pas un manager");
+
+    if (manager.role !== "manager") {
+        const error = new Error("L'utilisateur n'a pas le rôle requis (manager)");
         error.statusCode = 403;
         throw error;
     }
 
-    // === Assignation
+    // manager.isActive = false;
+    // await manager.save();
+
     campaign.assignedAgents.push({
         userId: userId,
         assignedAt: Date.now(),
         role: "manager"
     });
+
     await campaign.save();
     return campaign.assignedAgents;
 }
@@ -280,8 +264,15 @@ export async function assignAgentToCampaign(campaignId, userId) {
         error.statusCode = 404;
         throw error;
     }
+    const alreadyAssigned = campaign.assignedAgents.some(
+        a => a.userId.toString() === userId.toString()
+    );
+    if (alreadyAssigned) {
+        const error = new Error("Cet agent est déjà assigné à cette campagne");
+        error.statusCode = 400;
+        throw error;
+    }
 
-    // === Vérification de l'agent
     const agent = await User.findById(userId);
     if (!agent) {
         const error = new Error("L'agent n'existe pas");
@@ -289,23 +280,21 @@ export async function assignAgentToCampaign(campaignId, userId) {
         throw error;
     }
 
-    // === Vérification (agent !== manager)
-    if (campaign.managerId.toString() !== agent._id.toString()) {
-        const error = new Error("Vous n'avez pas accès à cette campagne en tant que agent");
+    if (agent.role !== "agent") {
+        const error = new Error("L'utilisateur n'est pas un agent");
         error.statusCode = 403;
         throw error;
     }
 
-    // === Vérification de la disponibilité de l'agent
-    const agents = await User.find({ role: "agent" });
-    const availableAgents = agents.filter(a => a.isAvailable);
-    if (availableAgents.length === 0) {
-        const error = new Error("Aucun agent disponible");
+    if (!agent.isActive) {
+        const error = new Error("Cet agent n'est pas disponible actuellement");
         error.statusCode = 400;
         throw error;
     }
 
-    // === Assignation
+    // agent.isActive = false;
+    // await agent.save();
+
     campaign.assignedAgents.push({
         userId: userId,
         assignedAt: Date.now(),
@@ -325,42 +314,41 @@ export async function assignVeterinarianToCampaign(campaignId, userId) {
         throw error;
     }
 
-    // === Vérification du vétérinaire
+    const alreadyAssigned = campaign.assignedAgents.some(
+        a => a.userId.toString() === userId.toString()
+    );
+    if (alreadyAssigned) {
+        const error = new Error("Ce vétérinaire est déjà assigné à cette campagne");
+        error.statusCode = 400;
+        throw error;
+    }
+
     const veterinarian = await User.findById(userId);
     if (!veterinarian) {
-        const error = new Error("L'agent n'existe pas");
+        const error = new Error("L'utilisateur n'existe pas");
         error.statusCode = 404;
         throw error;
     }
-    if(veterinarian.role !== "veterinarian"){
+
+    if (veterinarian.role !== "veterinaire") {
         const error = new Error("L'utilisateur n'est pas un vétérinaire");
         error.statusCode = 403;
         throw error;
     }
 
-    // === Vérification de l'agent
-    if (campaign.managerId.toString() !== veterinarian._id.toString()) {
-        const error = new Error("Vous n'avez pas accès à cette campagne");
-        error.statusCode = 403;
-        throw error;
-    }
-
-    // === Vérification de la disponibilité de l'agent
-    const veterinarians = await User.find({ role: "veterinarian" });
-    const availableVeterinarians = veterinarians.filter(a => a.isAvailable);
-    if (availableVeterinarians.length === 0) {
-        const error = new Error("Aucun vétérinaire disponible");
+    if (!veterinarian.isActive) {
+        const error = new Error("Ce vétérinaire n'est pas disponible actuellement");
         error.statusCode = 400;
         throw error;
     }
+    veterinarian.isActive = false;
+    await veterinarian.save();
 
-    // === Assignation
     campaign.assignedAgents.push({
         userId: userId,
         assignedAt: Date.now(),
-        role: "veterinarian"
+        role: "veterinaire"
     });
-
     await campaign.save();
     return campaign.assignedAgents;
 }
@@ -373,20 +361,38 @@ export async function assignComptableToCampaign(campaignId, userId) {
         error.statusCode = 404;
         throw error;
     }
-    // === Vérification du comptable
+
+    const alreadyAssigned = campaign.assignedAgents.some(
+        a => a.userId.toString() === userId.toString()
+    );
+    if (alreadyAssigned) {
+        const error = new Error("Ce comptable est déjà assigné à cette campagne");
+        error.statusCode = 400;
+        throw error;
+    }
+
     const comptable = await User.findById(userId);
     if (!comptable) {
         const error = new Error("L'utilisateur n'existe pas");
         error.statusCode = 404;
         throw error;
     }
-    if(comptable.role !== "comptable"){
+
+    if (comptable.role !== "comptable") {
         const error = new Error("L'utilisateur n'est pas un comptable");
         error.statusCode = 403;
         throw error;
     }
 
-    // === Assignation
+    if (!comptable.isActive) {
+        const error = new Error("Ce comptable n'est pas disponible");
+        error.statusCode = 400;
+        throw error;
+    }
+
+    comptable.isActive = false;
+    await comptable.save();
+
     campaign.assignedAgents.push({
         userId: userId,
         assignedAt: Date.now(),

@@ -6,7 +6,11 @@ import {
     getCampaignsByCategory,
     getCampaignsByDepartment,
     updateCampaign,
-    deleteCampaign
+    deleteCampaign,
+    assignVeterinarianToCampaign,
+    assignAgentToCampaign,
+    assignManagerToCampaign,
+    assignComptableToCampaign
 } from "../services/campaign.service.js";
 
 // ===> Création d'une campagne
