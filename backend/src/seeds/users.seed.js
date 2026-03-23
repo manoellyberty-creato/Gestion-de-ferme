@@ -16,17 +16,17 @@ const seedUsers = async () => {
         const uri = process.env.MONGO_URL;
         
         if (!uri || uri.includes('127.0.0.1')) {
-            console.warn("⚠️ Attention : Vous utilisez peut-être encore une adresse locale !");
+            console.warn(" Attention : Vous utilisez peut-être encore une adresse locale !");
         }
 
         if (!uri) throw new Error("MONGO_URL est absente du fichier .env");
         // 3. Connexion
         await mongoose.connect(uri);
-        console.log('✅ Connecté à la base de données distante !');
+        console.log(' Connecté à la base de données distante !');
 
         // 4. Nettoyage
         await User.deleteMany({});
-        console.log('🗑️ Anciens utilisateurs supprimés.');
+        console.log('Anciens utilisateurs supprimés.');
 
         // 5. Hachage
         const salt = await bcrypt.genSalt(10);
@@ -37,16 +37,17 @@ const seedUsers = async () => {
             { name: 'Admin Global', email: 'admin@ferme.com', password: commonPassword, role: 'admin', department: 'Direction' },
             { name: 'Gérant Volaille', email: 'gerant@ferme.com', password: commonPassword, role: 'gerant', department: 'Volaille' },
             { name: 'Agent Terrain', email: 'agent@ferme.com', password: commonPassword, role: 'agent', department: 'Bétail' },
-            { name: 'Dr. Sarah (Veto)', email: 'veto@ferme.com', password: commonPassword, role: 'veterinaire', department: 'Santé' }
+            { name: 'Dr. Sarah (Veto)', email: 'veto@ferme.com', password: commonPassword, role: 'veterinaire', department: 'Santé' },
+            { name: 'Dr. Mano (Veto)', email: 'comptable@ferme.com', password: commonPassword, role: 'comptable', department: 'Finance' }
         ];
 
         // 7. Insertion
         await User.insertMany(users);
-        console.log('🚀 Les 4 utilisateurs de base ont été créés avec succès !');
-        console.log('🔑 Mot de passe par défaut : ferme2026');
+        console.log('Les 5 utilisateurs de base ont été créés avec succès !');
+        console.log('Mot de passe par défaut : ferme2026');
 
     } catch (error) {
-        console.error('❌ Erreur lors du seed :', error);
+        console.error('Erreur lors du seed :', error);
     } finally {
         await mongoose.disconnect();
         process.exit();

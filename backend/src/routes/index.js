@@ -1,5 +1,4 @@
 // Fichier principal des routes de l'application
-import express from 'express';
 import authRoutes from './auth.routes.js';
 import userRoutes from './users.routes.js';
 import animalRoutes from './animals.routes.js';
@@ -9,14 +8,13 @@ import healthRoutes from './health.routes.js';
 import reportRoutes from './reports.routes.js';
 import alertRoutes from './alerts.routes.js';
 import meRoutes from './me.routes.js';
-
-const router = express.Router();
-
-// Routes d'authentification
+import { Router } from 'express';
+const router = Router();
+ 
+// Toutes les routes d'authentification seront préfixées par /auth
 router.use('/auth', authRoutes);
-
-// Routes utilisateur
 router.use('/users', userRoutes);
+ 
 
 // Routes des animaux
 router.use('/animals', animalRoutes);

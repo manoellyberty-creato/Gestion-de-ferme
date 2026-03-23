@@ -1,4 +1,5 @@
 // Service pour les rapports financiers et analyses
+import mongoose from 'mongoose';
 import Transaction from '../models/Transaction.js';
 import Campaign from '../models/Campaign.js';
 import Animal from '../models/Animal.js';
@@ -21,16 +22,6 @@ class ReportService {
     async getTransactions(filters = {}, page = 1, limit = 50) {
         try {
             const query = {};
-            const options = {
-                page,
-                limit,
-                sort: { date: -1 },
-                populate: [
-                    { path: 'campaign', select: 'name startDate endDate' },
-                    { path: 'recordedBy', select: 'name email' },
-                    { path: 'animal', select: 'name tagNumber species' }
-                ]
-            };
 
             // Appliquer les filtres
             if (filters.type) query.type = filters.type;
@@ -43,8 +34,30 @@ class ReportService {
                 if (filters.endDate) query.date.$lte = new Date(filters.endDate);
             }
 
-            const result = await Transaction.paginate(query, options);
-            return result;
+            // Pagination manuelle
+            const skip = (page - 1) * limit;
+            const total = await Transaction.countDocuments(query);
+            const transactions = await Transaction.find(query)
+                .sort({ date: -1 })
+                .skip(skip)
+                .limit(limit)
+                .populate([
+                    { path: 'campaign', select: 'name startDate endDate' },
+                    { path: 'recordedBy', select: 'name email' },
+                    { path: 'animal', select: 'name tagNumber species' }
+                ]);
+
+            return {
+                docs: transactions,
+                totalDocs: total,
+                limit: limit,
+                page: page,
+                totalPages: Math.ceil(total / limit),
+                hasNextPage: page * limit < total,
+                hasPrevPage: page > 1,
+                nextPage: page * limit < total ? page + 1 : null,
+                prevPage: page > 1 ? page - 1 : null
+            };
         } catch (error) {
             throw new Error(`Erreur lors de la récupération des transactions: ${error.message}`);
         }
@@ -332,15 +345,34 @@ class ReportService {
     // Rapport de budget vs dépenses réelles
     async getBudgetVsActualReport(campaignId) {
         try {
-            // Pour l'instant, on retourne les dépenses réelles
-            // TODO: Implémenter la gestion des budgets
+            // Récupérer la campagne avec son budget
+            const campaign = await mongoose.model('Campaign').findById(campaignId);
+            if (!campaign) {
+                throw new Error('Campagne non trouvée');
+            }
+
+            // Récupérer les dépenses réelles
             const actualExpenses = await this.getExpenseAnalysis(campaignId);
+
+            // Calculer la variance
+            let variance = null;
+            let variancePercentage = null;
+
+            if (campaign.budget && actualExpenses.total > 0) {
+                variance = campaign.budget - actualExpenses.total;
+                variancePercentage = ((variance / campaign.budget) * 100);
+            }
 
             return {
                 campaignId,
-                budget: null, // À implémenter
-                actual: actualExpenses,
-                variance: null // À calculer
+                campaignName: campaign.name,
+                budget: campaign.budget || 0,
+                actual: actualExpenses.total,
+                variance: variance,
+                variancePercentage: variancePercentage,
+                status: variance !== null ?
+                    (variance >= 0 ? 'under_budget' : 'over_budget') : 'no_budget_set',
+                details: actualExpenses
             };
         } catch (error) {
             throw new Error(`Erreur lors du rapport budget vs réel: ${error.message}`);

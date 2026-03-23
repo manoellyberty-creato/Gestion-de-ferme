@@ -7,8 +7,8 @@ import requireRole from '../middleware/requireRole.js';
 const router = express.Router();
 
 // Toutes les routes ici demandent d'être Admin
-router.use(requireAuth);
-router.use(requireRole('admin'));
+// router.use(requireAuth);
+// router.use(requireRole('admin'));
 
 router.get('/', userCtrl.getUsers);           // Voir tout le monde
 router.post('/', userCtrl.addUser);           // Créer un user

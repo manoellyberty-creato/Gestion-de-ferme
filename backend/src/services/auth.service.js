@@ -22,6 +22,7 @@ export const login = async (email, password) => {
         secret,
         { expiresIn: '8h' }
     );
+    req.user = { id: user._id, role: user.role, dept: user.department }; // Ajout de l'utilisateur à la requête pour les middlewares suivants
 
     return { token, user: { id: user._id, name: user.name, role: user.role } };
 };

@@ -1,6 +1,6 @@
-// Authentication controller (login, logout, tokens)import * as authService from '../services/auth.service.js';
-import User from '../models/User.js';
+// Authentication controller (login, logout, tokens)
 import * as authService from '../services/auth.service.js';
+import User from '../models/User.js';
 export const register = async (req, res) => {
     try {
         const user = await authService.register(req.body);
