@@ -41,6 +41,7 @@ const feedSchema = new mongoose.Schema({
         type: Number,
         min: 0,
         default: 0,
+        required: true
     },
     // Date d'expiration
     expirationDate: {
@@ -50,17 +51,14 @@ const feedSchema = new mongoose.Schema({
     supplier: {
         type: String,
         default: '',
+        required: true
     },
     // Statut actif/inactif
     isActive: {
         type: Boolean,
         default: true,
     },
-    // Notes
-    notes: {
-        type: String,
-        default: '',
-    },
+
 }, { timestamps: true });
 
 // Index pour optimiser les requêtes

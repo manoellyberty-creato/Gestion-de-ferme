@@ -28,6 +28,7 @@ class FeedController {
      * Récupère un produit d'alimentation par son ID
      */
     async getFeedById(req, res) {
+        console.log("controllers feed")
         try {
             const { id } = req.params;
             const feed = await feedService.getFeedById(id);

@@ -6,7 +6,6 @@ import campaignRoutes from './campaigns.routes.js';
 import feedRoutes from './feed.routes.js';
 import healthRoutes from './health.routes.js';
 import reportRoutes from './reports.routes.js';
-import alertRoutes from './alerts.routes.js';
 import meRoutes from './me.routes.js';
 import { Router } from 'express';
 const router = Router();
@@ -31,8 +30,7 @@ router.use('/health', healthRoutes);
 // Routes des rapports financiers (nouveau module)
 router.use('/reports', reportRoutes);
 
-// Routes des alertes
-router.use('/alerts', alertRoutes);
+
 
 // Routes personnelles (profil utilisateur)
 router.use('/me', meRoutes);

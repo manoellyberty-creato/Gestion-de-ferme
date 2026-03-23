@@ -30,7 +30,7 @@ const transactionSchema = new mongoose.Schema({
     // Devise (XAF par défaut)
     currency: {
         type: String,
-        default: 'XAF',
+        default: 'XOF',
     },
     // Description détaillée
     description: {
