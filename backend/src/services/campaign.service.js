@@ -390,8 +390,8 @@ export async function assignComptableToCampaign(campaignId, userId) {
         throw error;
     }
 
-    comptable.isActive = false;
-    await comptable.save();
+    // comptable.isActive = false;
+    // await comptable.save();
 
     campaign.assignedAgents.push({
         userId: userId,

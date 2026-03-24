@@ -83,7 +83,7 @@ export async function getCampaignsByCategoryController(req, res) {
 }
 
 // ===> Récupération des campagnes par département (AVEC PAGINATION)
-export async function getCampaignsByDepartmentController(req, res) {
+export async function getCampaignsByDepartmentController(req, res, next) {
     try {
         const { page, limit } = req.query;
         const department = req.params.department;
@@ -99,7 +99,7 @@ export async function getCampaignsByDepartmentController(req, res) {
 }
 
 // ===> Modification d'une campagne
-export async function updateCampaignController(req, res) {
+export async function updateCampaignController(req, res, next) {
     try {
         const data = req.body;
         const campaignId = req.params.campaignId;
@@ -111,7 +111,7 @@ export async function updateCampaignController(req, res) {
 }
 
 // ===> Suppression d'une campagne
-export async function deleteCampaignController(req, res) {
+export async function deleteCampaignController(req, res, next) {
     try {
         const campaignId = req.params.campaignId;
         const result = await deleteCampaign(campaignId);
@@ -122,7 +122,7 @@ export async function deleteCampaignController(req, res) {
 }
 
 // ===> Assignation d'un agent à une campagne
-export async function assignAgentToCampaignController(req, res) {
+export async function assignAgentToCampaignController(req, res, next) {
     try {
         const { campaignId, userId } = req.params;
         const result = await assignAgentToCampaign(campaignId, userId);
@@ -133,7 +133,7 @@ export async function assignAgentToCampaignController(req, res) {
 }
 
 // ===> Assignation d'un vétérinaire à une campagne
-export async function assignVeterinarianToCampaignController(req, res) {
+export async function assignVeterinarianToCampaignController(req, res, next) {
     try {
         const { campaignId, userId } = req.params;
         const result = await assignVeterinarianToCampaign(campaignId, userId);
@@ -144,7 +144,7 @@ export async function assignVeterinarianToCampaignController(req, res) {
 }
 
 // ===> Assignation d'un manager à une campagne
-export async function assignManagerToCampaignController(req, res) {
+export async function assignManagerToCampaignController(req, res, next) {
     try {
         const { campaignId, userId } = req.params;
         const result = await assignManagerToCampaign(campaignId, userId);
@@ -155,7 +155,7 @@ export async function assignManagerToCampaignController(req, res) {
 }
 
 // ===> Assignation d'un comptable à une campagne
-export async function assignComptableToCampaignController(req, res) {
+export async function assignComptableToCampaignController(req, res, next) {
     try {
         const { campaignId, userId } = req.params;
         const result = await assignComptableToCampaign(campaignId, userId);
