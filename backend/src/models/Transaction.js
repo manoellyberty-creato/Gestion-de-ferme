@@ -101,6 +101,8 @@ transactionSchema.index({ type: 1, category: 1, date: -1 });
 transactionSchema.index({ campaign: 1, date: -1 });
 transactionSchema.index({ status: 1, date: -1 });
 
+
+
 // Méthodes statiques pour les calculs financiers
 transactionSchema.statics.getTotalByType = async function(type, campaignId = null, startDate = null, endDate = null) {
     const match = { type };
