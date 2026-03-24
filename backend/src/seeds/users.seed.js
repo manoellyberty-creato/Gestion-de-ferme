@@ -35,7 +35,7 @@ const seedUsers = async () => {
         // 6. Données
         const users = [
             { name: 'Admin Global', email: 'admin@ferme.com', password: commonPassword, role: 'admin', department: 'Direction' },
-            { name: 'Gérant Volaille', email: 'gerant@ferme.com', password: commonPassword, role: 'gerant', department: 'Volaille' },
+            { name: 'Gérant Volaille', email: 'gerant@ferme.com', password: commonPassword, role: 'manager', department: 'Volaille' },
             { name: 'Agent Terrain', email: 'agent@ferme.com', password: commonPassword, role: 'agent', department: 'Bétail' },
             { name: 'Dr. Sarah (Veto)', email: 'veto@ferme.com', password: commonPassword, role: 'veterinaire', department: 'Santé' },
             { name: 'Dr. Mano (Veto)', email: 'comptable@ferme.com', password: commonPassword, role: 'comptable', department: 'Finance' }

@@ -6,7 +6,7 @@
 
 <template>
 
-
+<h1>Dashbord Veto</h1>
 
 </template>
 

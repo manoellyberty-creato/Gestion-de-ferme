@@ -6,7 +6,7 @@
 
 <template>
 
-
+<h1>Dashboard comptable</h1>
 
 </template>
 

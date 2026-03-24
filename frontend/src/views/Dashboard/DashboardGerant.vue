@@ -6,7 +6,7 @@
 
 <template>
 
-
+<h1>Dashbord Manager</h1>
 
 </template>
 

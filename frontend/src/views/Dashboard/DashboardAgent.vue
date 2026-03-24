@@ -6,7 +6,7 @@
 
 <template>
 
-
+<h1>Dashbord Agent</h1>
 
 </template>
 
