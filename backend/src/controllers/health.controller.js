@@ -84,9 +84,7 @@ class HealthController {
                 message: 'Prescription créée avec succès',
                 data: prescription
             });
-        } catch (error) {
-            next(error);
-        }
+        } catch (error) { next(error) }
     }
 
     // Récupérer les prescriptions d'un animal

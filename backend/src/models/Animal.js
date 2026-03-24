@@ -3,9 +3,25 @@ import { ANIMAL_STATUS } from "../utils/constants.js";
 
 const animalSchema = new mongoose.Schema(
   {
-    campaignId: {
-      type: String,
+    campaign: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Campaign',
       required: true
+    },
+    name: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    species: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    tagNumber: {
+      type: String,
+      required: true,
+      unique: true
     },
     qrCode: {
       type: String,

@@ -61,6 +61,25 @@ const campaignSchema = new mongoose.Schema(
       qualityStandards: String
     },
 
+    speciesCategories: [
+      {
+        name: {
+          type: String,
+          required: true,
+          trim: true
+        },
+        animalCount: {
+          type: Number,
+          required: true,
+          min: 1
+        },
+        generatedCount: {
+          type: Number,
+          default: 0
+        }
+      }
+    ],
+
     budget: {
       type: Number,
       required: true,

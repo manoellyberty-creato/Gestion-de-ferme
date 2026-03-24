@@ -11,7 +11,8 @@ import {
     assignManagerToCampaignController,
     assignAgentToCampaignController,
     assignVeterinarianToCampaignController,
-    assignComptableToCampaignController
+    assignComptableToCampaignController,
+    unassignAgentFromCampaignController
 } from "../controllers/campaign.controller.js";
 
 const router = express.Router();
@@ -52,5 +53,8 @@ router.put("/assignVeterinarian/:campaignId/:userId", assignVeterinarianToCampai
 
 // ===> Assignation d'un comptable à une campagne
 router.put("/assignComptable/:campaignId/:userId", assignComptableToCampaignController);
+
+// ===> Désassignation d'un membre d'une campagne
+router.delete("/unassign/:campaignId/:userId", unassignAgentFromCampaignController);
 
 export default router;

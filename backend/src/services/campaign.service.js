@@ -4,6 +4,7 @@ import User from "../models/User.js";
 import Animal from "../models/Animal.js";
 import Department from "../models/Departement.js";
 import mongoose from "mongoose";
+import qrCodeService from "../services/qrCode.service.js";
 
 // ===> Création d'une campagne
 export async function createCampaign(data, userId) {
@@ -15,13 +16,21 @@ export async function createCampaign(data, userId) {
         expectedEndDate,
         goal,
         budget,
-        goalMetrics
+        goalMetrics,
+        speciesCategories
     } = data;
 
     //=== Validation des champs
     if (!name || !categoryId || !startDate || !expectedEndDate ||
-        !goal || budget == null || !goalMetrics || !department) {
-        const error = new Error("Tous les champs sont requis");
+        !goal || budget == null || !department || !Array.isArray(speciesCategories) || speciesCategories.length === 0) {
+        const error = new Error("Tous les champs requis ne sont pas fournis");
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const hasInvalidCategory = speciesCategories.some(sc => !sc.name || !sc.animalCount || Number(sc.animalCount) < 1);
+    if (hasInvalidCategory) {
+        const error = new Error("Toutes les catégories doivent avoir un nom et un nombre d'animaux >= 1");
         error.statusCode = 400;
         throw error;
     }
@@ -44,26 +53,112 @@ export async function createCampaign(data, userId) {
         expectedEndDate,
         goal,
         budget,
-        goalMetrics
+        goalMetrics,
+        speciesCategories: speciesCategories.map(sc => ({
+            name: sc.name.trim(),
+            animalCount: Number(sc.animalCount),
+            generatedCount: 0
+        }))
     });
 
-    return campaign;
+    // === Génération des animaux par catégorie
+    const animals = [];
+
+    for (const cat of campaign.speciesCategories) {
+        for (let i = 1; i <= cat.animalCount; i++) {
+            const tagNumber = `${cat.name.replace(/\s+/g, '_').toUpperCase()}_${Date.now()}_${i}_${Math.random().toString(36).substring(2, 8)}`;
+            const qrCode = await qrCodeService.generateCustomQRCode({
+                campaignId: campaign._id.toString(),
+                category: cat.name,
+                tagNumber,
+                generatedAt: new Date().toISOString()
+            });
+
+            const animal = {
+                campaign: campaign._id,
+                name: `${cat.name} #${i}`,
+                species: cat.name,
+                tagNumber,
+                qrCode,
+                initialWeight: Math.round((Math.random() * 15 + 5) * 100) / 100,
+                currentWeight: Math.round((Math.random() * 15 + 5) * 100) / 100,
+                dateOfBirth: new Date(),
+                status: 'vivant'
+            };
+            animals.push(animal);
+        }
+        cat.generatedCount = cat.animalCount;
+    }
+
+    if (animals.length > 0) {
+        await Animal.insertMany(animals);
+    }
+
+    // Mettre à jour la campagne après génération des animaux
+    campaign.speciesCategories = campaign.speciesCategories.map(c => ({ ...c, generatedCount: c.animalCount }));
+    await campaign.save();
+
+    const populatedCampaign = await Campaign.findById(campaign._id)
+        .populate('categoryId')
+        .populate('department')
+        .populate('assignedAgents.userId');
+
+    return {
+        ...populatedCampaign.toObject(),
+        animals: await Animal.find({ campaign: campaign._id })
+    };
 }
 
 // ===> Récupération d'une campagne par id
 export async function getCampaignbyId(campaignId) {
+    const campaign = await Campaign.findById(campaignId)
+        .populate("categoryId")
+        .populate("department")
+        .populate("assignedAgents.userId");
+    if (!campaign) {
+        const error = new Error("La campagne n'existe pas");
+        error.statusCode = 404;
+        throw error;
+    }
+
+    const animals = await Animal.find({ campaign: campaign._id });
+
+    const result = campaign.toObject();
+    result.animals = animals;
+
+    return result;
+}
+
+export async function unassignAgentFromCampaign(campaignId, userId) {
     const campaign = await Campaign.findById(campaignId);
     if (!campaign) {
         const error = new Error("La campagne n'existe pas");
         error.statusCode = 404;
         throw error;
     }
+
+    const assignmentIndex = campaign.assignedAgents.findIndex(
+        (a) => a.userId.toString() === userId.toString()
+    );
+
+    if (assignmentIndex === -1) {
+        const error = new Error("Aucun membre assigné avec cet userId");
+        error.statusCode = 404;
+        throw error;
+    }
+
+    campaign.assignedAgents.splice(assignmentIndex, 1);
+    await campaign.save();
+
     return campaign;
 }
 
-// ===> Récupération de toutes les campagnes d'un manager (AVEC PAGINATION)
+// ===> Récupération de toutes les campagnes d'un manager (AVEC PAGINATION & POPULATE)
 export async function getManagerCampaigns(managerId, page = 1, limit = 10) {
     const campaigns = await Campaign.find({ managerId })
+        .populate("categoryId")
+        .populate("department")
+        .populate("assignedAgents.userId")
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit);
@@ -71,14 +166,43 @@ export async function getManagerCampaigns(managerId, page = 1, limit = 10) {
     return campaigns
 }
 
-// ===> Récupération de toutes les campagnes (AVEC PAGINATION)
-export async function getCampaigns(page = 1, limit = 10) {
-    const campaigns = await Campaign.find()
+// ===> Récupération de toutes les campagnes (AVEC PAGINATION & POPULATE)
+export async function getCampaigns(page = 1, limit = 10, categoryId = null, department = null, search = null) {
+    const query = {};
+
+    if (categoryId) {
+        if (mongoose.Types.ObjectId.isValid(categoryId)) {
+            query.categoryId = categoryId;
+        } else {
+            const categoryByName = await Category.findOne({ name: categoryId });
+            if (categoryByName) query.categoryId = categoryByName._id;
+            else return [];
+        }
+    }
+
+    if (department) {
+        if (mongoose.Types.ObjectId.isValid(department)) {
+            query.department = department;
+        } else {
+            const dept = await Department.findOne({ name: department });
+            if (dept) query.department = dept._id;
+            else return [];
+        }
+    }
+
+    if (search) {
+        query.name = { $regex: search, $options: 'i' };
+    }
+
+    const campaigns = await Campaign.find(query)
+        .populate("categoryId")
+        .populate("department")
+        .populate("assignedAgents.userId")
         .sort({ startDate: -1 })
         .skip((page - 1) * limit)
         .limit(limit);
 
-    return campaigns
+    return campaigns;
 }
 
 // ===> Récupération des campagnes par catégorie (AVEC PAGINATION)
@@ -101,21 +225,23 @@ export async function getCampaignsByCategory(categoryId, page = 1, limit = 10) {
 // ===> Récupération des campagnes par département (AVEC PAGINATION)
 export async function getCampaignsByDepartment(department, page = 1, limit = 10) {
     try {
-        if (!mongoose.Types.ObjectId.isValid(department)) {
-            return [];
+        let departmentId = null;
+        if (mongoose.Types.ObjectId.isValid(department)) {
+            departmentId = department;
+        } else {
+            const dept = await Department.findOne({ name: department });
+            if (!dept) return [];
+            departmentId = dept._id;
         }
-        const deptId = new mongoose.Types.ObjectId(department);
-        const categories = await Category.find({ department: deptId });
-        if (categories.length === 0) return [];
-        const categoryIds = categories.map(c => c._id);
-        const campaigns = await Campaign.find({
-            categoryId: { $in: categoryIds }
-        })
+
+        const campaigns = await Campaign.find({ department: departmentId })
             .populate("categoryId")
             .populate("department")
+            .populate("assignedAgents.userId")
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
             .limit(limit);
+
         return campaigns;
     } catch (error) {
         console.error("Erreur getCampaignsByDepartment:", error);
