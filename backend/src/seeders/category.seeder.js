@@ -55,19 +55,28 @@ const categories = [
 
 async function seedCategories() {
     try {
+        console.log("🌱 Connexion à MongoDB...");
         await connectDb();
+        console.log("✅ Connecté à MongoDB");
+
+        console.log("🌱 Ajout des catégories...");
+        let count = 0;
         for (const cat of categories) {
-            await Category.updateOne(
+            const result = await Category.updateOne(
                 { name: cat.name, department: cat.department },
                 { $set: cat },
                 { upsert: true }
             );
+            count += result.upsertedCount || 0;
+            console.log(`  ✓ ${cat.name}`);
         }
-        console.log("Catégories ajoutées avec succès");
+        console.log(`✅ ${count} nouvelle(s) catégorie(s) ajoutée(s)`);
     } catch (error) {
-        console.error("Erreur :", error);
-    }finally{
+        console.error("❌ Erreur :", error.message);
+        process.exit(1);
+    } finally {
         await disconnectDB();
+        process.exit(0);
     }
 }
 seedCategories();
