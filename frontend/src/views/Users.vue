@@ -327,3 +327,4 @@ const deleteUser = async (id) => {
   background-image: url('@/assets/images/equipeagro.jpg');
 }
 </style>
+</style>
