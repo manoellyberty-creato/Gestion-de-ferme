@@ -1,10 +1,42 @@
-import Router from "express";
-import campaignsRoutes from "./campaigns.routes.js";
-import alertsRoutes from "./alerts.routes.js";
-
+// Fichier principal des routes de l'application
+import authRoutes from './auth.routes.js';
+import userRoutes from './users.routes.js';
+import animalRoutes from './animals.routes.js';
+import campaignRoutes from './campaigns.routes.js';
+import feedRoutes from './feed.routes.js';
+import healthRoutes from './health.routes.js';
+import reportRoutes from './reports.routes.js';
+import meRoutes from './me.routes.js';
+import alertRoutes from './alerts.routes.js';
+import { Router } from 'express';
 const router = Router();
+ 
+// Toutes les routes d'authentification seront préfixées par /auth
+router.use('/auth', authRoutes);
+router.use('/users', userRoutes);
+ 
 
-router.use("/campaign", campaignsRoutes);
-router.use("/alert", alertsRoutes);
+// Routes des animaux
+router.use('/animals', animalRoutes);
+
+// Routes des campagnes
+router.use("/campaign", campaignRoutes);
+
+// Routes des alertes
+router.use("/alerts", alertRoutes);
+
+// Routes de l'alimentation
+router.use('/feed', feedRoutes);
+
+// Routes de santé (nouveau module)
+router.use('/health', healthRoutes);
+
+// Routes des rapports financiers (nouveau module)
+router.use('/reports', reportRoutes);
+
+
+
+// Routes personnelles (profil utilisateur)
+router.use('/me', meRoutes);
 
 export default router;
