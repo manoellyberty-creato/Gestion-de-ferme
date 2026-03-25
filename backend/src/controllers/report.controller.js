@@ -1,5 +1,7 @@
 // Contrôleur pour les rapports financiers et analyses
 import reportService from '../services/report.service.js';
+import feedService from '../services/feed.service.js';
+import healthService from '../services/health.service.js';
 
 class ReportController {
     // === GESTION DES TRANSACTIONS ===
@@ -225,11 +227,30 @@ class ReportController {
             const { campaignId } = req.query;
 
             // Récupérer les données en parallèle
-            const [financialSummary, expenseAnalysis, cashFlow] = await Promise.all([
+            const [financialSummary, expenseAnalysis, cashFlow, feedStats, healthStats, lowStockFeeds, expiringFeeds, healthAlerts] = await Promise.all([
                 reportService.getFinancialSummary(campaignId),
                 reportService.getExpenseAnalysis(campaignId),
-                reportService.getCashFlowAnalysis(campaignId, 'monthly')
+                reportService.getCashFlowAnalysis(campaignId, 'monthly'),
+                feedService.getFeedStats(),
+                healthService.getHealthStatistics(campaignId),
+                feedService.getLowStockAlerts(),
+                feedService.getExpiringSoon(),
+                healthService.getHealthAlerts()
             ]);
+
+            const alerts = [];
+            if (lowStockFeeds?.length > 0) {
+                alerts.push(`${lowStockFeeds.length} produits d'alimentation en rupture de stock`)   
+            }
+            if (expiringFeeds?.length > 0) {
+                alerts.push(`${expiringFeeds.length} produits d'alimentation expirent prochainement`);
+            }
+            if (healthAlerts?.length > 0) {
+                alerts.push(...healthAlerts.map(alert => alert.message || alert));
+            }
+            if (financialSummary?.netProfit < 0) {
+                alerts.push('Bénéfice net négatif, vérifier les dépenses');
+            }
 
             res.json({
                 success: true,
@@ -237,7 +258,9 @@ class ReportController {
                     financialSummary,
                     expenseAnalysis,
                     cashFlow: cashFlow.slice(-6), // 6 derniers mois
-                    alerts: [] // À implémenter selon les seuils définis
+                    feedStats,
+                    healthStats,
+                    alerts
                 }
             });
         } catch (error) {

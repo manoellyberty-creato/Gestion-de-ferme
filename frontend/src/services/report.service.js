@@ -44,10 +44,10 @@ export function getSalesProducts() {
   return api.get('/reports/sales/products')
 }
 
-export function getDashboard() {
-  return api.get('/reports/dashboard')
+export function getDashboard(params) {
+  return api.get('/reports/dashboard', { params })
 }
 
-export function getKpis() {
-  return api.get('/reports/kpis')
+export function getKPIs(params) {
+  return api.get('/reports/kpis', { params })
 }

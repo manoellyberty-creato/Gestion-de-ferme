@@ -46,6 +46,25 @@ class AlertService {
         }
     }
 
+    // Résoudre une alerte
+    async resolveAlert(id, userId) {
+        try {
+            const alert = await Alert.findByIdAndUpdate(
+                id,
+                {
+                    status: 'resolved',
+                    resolvedBy: userId,
+                    resolvedAt: new Date()
+                },
+                { new: true }
+            );
+            if (!alert) throw new Error('Alerte non trouvée');
+            return alert;
+        } catch (error) {
+            throw new Error(`Erreur lors de la résolution: ${error.message}`);
+        }
+    }
+
     // Supprimer une alerte
     async deleteAlert(id) {
         try {

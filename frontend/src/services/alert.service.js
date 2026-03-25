@@ -16,6 +16,10 @@ export function markAsRead(id) {
   return api.post(`/alerts/${id}/read`)
 }
 
+export function resolveAlert(id) {
+  return api.post(`/alerts/${id}/resolve`)
+}
+
 export function generateAutomatedAlerts(payload) {
   return api.post('/alerts/generate', payload)
 }

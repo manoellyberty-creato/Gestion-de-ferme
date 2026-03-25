@@ -1,5 +1,6 @@
 import api from './api'
 
+// Products
 export function createProduct(payload) {
   return api.post('/health/products', payload)
 }
@@ -12,8 +13,33 @@ export function getProductById(id) {
   return api.get(`/health/products/${id}`)
 }
 
+export function updateProduct(id, payload) {
+  return api.put(`/health/products/${id}`, payload)
+}
+
+export function deleteProduct(id) {
+  return api.delete(`/health/products/${id}`)
+}
+
+// Prescriptions
 export function createPrescription(payload) {
   return api.post('/health/prescriptions', payload)
+}
+
+export function getPrescriptions(params) {
+  return api.get('/health/prescriptions', { params })
+}
+
+export function getPrescriptionById(id) {
+  return api.get(`/health/prescriptions/${id}`)
+}
+
+export function updatePrescription(id, payload) {
+  return api.put(`/health/prescriptions/${id}`, payload)
+}
+
+export function deletePrescription(id) {
+  return api.delete(`/health/prescriptions/${id}`)
 }
 
 export function getAnimalPrescriptions(animalId) {
@@ -28,6 +54,7 @@ export function addAdministration(prescriptionId, payload) {
   return api.post(`/health/prescriptions/${prescriptionId}/administrations`, payload)
 }
 
+// Statistics & Alerts
 export function getHealthStatistics() {
   return api.get('/health/statistics')
 }

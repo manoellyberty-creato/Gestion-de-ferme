@@ -55,6 +55,19 @@ class AlertController {
         }
     }
 
+    async resolveAlert(req, res, next) {
+        try {
+            const alert = await alertService.resolveAlert(req.params.id, req.user.id);
+            res.json({
+                success: true,
+                message: 'Alerte résolue avec succès',
+                data: alert
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async deleteAlert(req, res, next) {
         try {
             const alert = await alertService.deleteAlert(req.params.id);

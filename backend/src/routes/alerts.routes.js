@@ -16,6 +16,9 @@ router.post("/", requireAuth, (req, res, next) => alertController.createAlert(re
 // ===> POST mark alert as read
 router.post("/:id/read", requireAuth, (req, res, next) => alertController.markAsRead(req, res, next));
 
+// ===> POST resolve alert
+router.post("/:id/resolve", requireAuth, (req, res, next) => alertController.resolveAlert(req, res, next));
+
 // ===> DELETE alert
 router.delete("/:id", requireAuth, (req, res, next) => alertController.deleteAlert(req, res, next));
 

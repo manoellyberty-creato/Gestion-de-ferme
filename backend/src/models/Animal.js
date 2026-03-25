@@ -46,7 +46,8 @@ const animalSchema = new mongoose.Schema(
     growthHistory: [{
       date: {
         type: Date,
-        default: Date.now
+        default: Date.now,
+        required: true
       },
       weight: {
         type: Number,

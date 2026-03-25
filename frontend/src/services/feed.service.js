@@ -12,6 +12,22 @@ export function createFeed(payload) {
   return api.post('/feed', payload)
 }
 
+export function updateFeed(id, payload) {
+  return api.put(`/feed/${id}`, payload)
+}
+
+export function deleteFeed(id) {
+  return api.delete(`/feed/${id}`)
+}
+
+export function updateStock(id, quantity) {
+  return api.put(`/feed/${id}/stock`, { quantity })
+}
+
+export function deactivateFeed(id) {
+  return api.put(`/feed/${id}/deactivate`, {})
+}
+
 export function getLowStockAlerts() {
   return api.get('/feed/alerts/low-stock')
 }
