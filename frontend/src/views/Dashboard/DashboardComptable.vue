@@ -1,4 +1,5 @@
 <script setup>
+import DashboardAdmin from './DashboardAdmin.vue'
 import { ref, computed, onMounted } from 'vue'
 import { useComptableDashboard } from '../../stores/useComptableDashboard'
 import TransactionApprovalCard from '../../components/comptable/TransactionApprovalCard.vue'
@@ -146,6 +147,10 @@ onMounted(async () => {
          Dashboard Comptable
       </h1>
       <p class="text-gray-600">Gestion financière, audits et réconciliations</p>
+    </div>
+
+    <div class="mb-6">
+      <DashboardAdmin />
     </div>
 
     <!-- Date Range & Campaign Selector -->

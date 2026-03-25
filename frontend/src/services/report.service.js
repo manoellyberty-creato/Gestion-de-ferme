@@ -20,8 +20,8 @@ export function getCampaignFinancial(campaignId) {
   return api.get(`/reports/campaigns/${campaignId}/financial`)
 }
 
-export function getCashFlow() {
-  return api.get('/reports/cash-flow')
+export function getCashFlow(campaignId = null, period = 'monthly') {
+  return api.get('/reports/cash-flow', { params: { campaignId, period } })
 }
 
 export function getExpensesAnalysis() {

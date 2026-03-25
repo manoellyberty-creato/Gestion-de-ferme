@@ -43,9 +43,6 @@ onMounted(() => {
       <p class="mt-3 text-gray-600">Chargement des données...</p>
     </div>
 
-    <div v-if="dashboardStore.error" class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-4">
-      {{ dashboardStore.error }}
-    </div>
 
     <div v-if="!dashboardStore.loading && !dashboardStore.error" class="space-y-6">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

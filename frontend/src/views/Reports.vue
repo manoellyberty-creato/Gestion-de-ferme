@@ -300,7 +300,7 @@ onMounted(() => {
 
       <!-- Cash Flow Chart -->
       <div v-else class="bg-white rounded-lg shadow p-6">
-        <div v-if="reportStore.cashFlowData?.docs?.length === 0" class="text-center py-12 text-gray-500">
+        <div v-if="!(reportStore.cashFlowData && reportStore.cashFlowData.length > 0)" class="text-center py-12 text-gray-500">
           Aucune donnée de flux de trésorerie
         </div>
         <div v-else class="overflow-x-auto">
@@ -315,7 +315,7 @@ onMounted(() => {
               </tr>
             </thead>
             <tbody class="divide-y">
-              <tr v-for="(item, idx) in reportStore.cashFlowData?.docs || []" :key="idx" class="hover:bg-gray-50">
+              <tr v-for="(item, idx) in reportStore.cashFlowData || []" :key="idx" class="hover:bg-gray-50">
                 <td class="px-4 py-2 text-sm font-medium">{{ item.period }}</td>
                 <td class="px-4 py-2 text-sm text-right text-green-600 font-semibold">{{ formatCurrency(item.income) }}</td>
                 <td class="px-4 py-2 text-sm text-right text-red-600 font-semibold">{{ formatCurrency(item.expense) }}</td>
@@ -330,10 +330,7 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Message d'erreur global -->
-    <div v-if="reportStore.error" class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600">
-      {{ reportStore.error }}
-    </div>
+    
   </div>
 </template>
 

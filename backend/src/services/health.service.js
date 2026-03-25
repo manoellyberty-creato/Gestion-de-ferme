@@ -165,6 +165,75 @@ class HealthService {
         }
     }
 
+    // Récupérer toutes les prescriptions
+    async getAllPrescriptions(filters = {}) {
+        try {
+            const query = {};
+            if (filters.status) query.status = filters.status;
+            if (filters.animal) query.animal = filters.animal;
+            if (filters.campaign) query.campaign = filters.campaign;
+
+            return await Prescription.find(query)
+                .populate('animal', 'name tagNumber species')
+                .populate('campaign', 'name startDate endDate')
+                .populate('veterinarian', 'name email')
+                .populate('prescribedProducts.product', 'name type dosage costPerUnit')
+                .sort({ prescriptionDate: -1 });
+        } catch (error) {
+            throw new Error(`Erreur lors de la récupération des prescriptions: ${error.message}`);
+        }
+    }
+
+    // Récupérer une prescription par ID
+    async getPrescriptionById(id) {
+        try {
+            const prescription = await Prescription.findById(id)
+                .populate('animal', 'name tagNumber species')
+                .populate('campaign', 'name startDate endDate')
+                .populate('veterinarian', 'name email')
+                .populate('prescribedProducts.product', 'name type dosage costPerUnit');
+            if (!prescription) {
+                throw new Error('Prescription non trouvée');
+            }
+            return prescription;
+        } catch (error) {
+            throw new Error(`Erreur lors de la récupération de la prescription: ${error.message}`);
+        }
+    }
+
+    // Mettre à jour une prescription
+    async updatePrescription(id, updateData) {
+        try {
+            const prescription = await Prescription.findByIdAndUpdate(
+                id,
+                updateData,
+                { new: true, runValidators: true }
+            )
+            .populate('animal campaign veterinarian')
+            .populate('prescribedProducts.product', 'name type dosage costPerUnit');
+
+            if (!prescription) {
+                throw new Error('Prescription non trouvée');
+            }
+            return prescription;
+        } catch (error) {
+            throw new Error(`Erreur lors de la mise à jour de la prescription: ${error.message}`);
+        }
+    }
+
+    // Supprimer une prescription
+    async deletePrescription(id) {
+        try {
+            const deleted = await Prescription.findByIdAndDelete(id);
+            if (!deleted) {
+                throw new Error('Prescription non trouvée');
+            }
+            return deleted;
+        } catch (error) {
+            throw new Error(`Erreur lors de la suppression de la prescription: ${error.message}`);
+        }
+    }
+
     // Ajouter une administration de médicament
     async addAdministration(prescriptionId, administrationData) {
         try {
@@ -187,7 +256,10 @@ class HealthService {
     // Obtenir les statistiques de santé pour une campagne
     async getHealthStatistics(campaignId, startDate = null, endDate = null) {
         try {
-            const matchConditions = { campaign: campaignId };
+            const matchConditions = {};
+            if (campaignId) {
+                matchConditions.campaign = campaignId;
+            }
             if (startDate || endDate) {
                 matchConditions.prescriptionDate = {};
                 if (startDate) matchConditions.prescriptionDate.$gte = startDate;

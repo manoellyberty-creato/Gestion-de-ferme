@@ -1,4 +1,5 @@
 <script setup>
+import DashboardAdmin from './DashboardAdmin.vue'
 import { ref, onMounted } from 'vue'
 import { useAgentDashboard } from '../../stores/useAgentDashboard'
 import AgentTaskCard from '../../components/agent/AgentTaskCard.vue'
@@ -120,6 +121,10 @@ onMounted(async () => {
           />
         </div>
       </div>
+    </div>
+
+    <div class="mb-6">
+      <DashboardAdmin />
     </div>
 
     <!-- Objectifs campagne -->

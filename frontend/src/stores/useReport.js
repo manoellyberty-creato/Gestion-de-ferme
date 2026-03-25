@@ -38,13 +38,25 @@ export const useReport = defineStore('report', () => {
         page,
         limit: pagination.value.limit
       })
-      if (response.docs) {
-        transactions.value = response.docs
+
+      // API peut retourner { success: true, data: { docs: ... } } ou directement { docs: ... }
+      const data = response?.data?.data || response?.data || response
+
+      if (data.docs) {
+        transactions.value = data.docs
         pagination.value = {
-          page: response.page,
-          limit: response.limit,
-          total: response.totalDocs,
-          pages: response.totalPages
+          page: data.page,
+          limit: data.limit,
+          total: data.totalDocs,
+          pages: data.totalPages
+        }
+      } else {
+        transactions.value = []
+        pagination.value = {
+          page: 1,
+          limit: pagination.value.limit,
+          total: 0,
+          pages: 0
         }
       }
     } catch (err) {
@@ -106,7 +118,8 @@ export const useReport = defineStore('report', () => {
     error.value = null
     try {
       const response = await reportService.getFinancialSummary()
-      financialSummary.value = response.data || response
+      // Prise en charge des réponses { success: true, data: ... } et { ... }
+      financialSummary.value = response?.data?.data || response?.data || response
     } catch (err) {
       error.value = err.message || 'Erreur lors de la récupération du résumé financier'
       console.error(error.value, err)
@@ -133,8 +146,9 @@ export const useReport = defineStore('report', () => {
     loading.value = true
     error.value = null
     try {
-      const response = await reportService.getCashFlow()
-      cashFlowData.value = response.data || response
+      const response = await reportService.getCashFlow(campaignId, period)
+      // Prise en charge des réponses { success: true, data: ... } et tableaux directs
+      cashFlowData.value = response?.data?.data || response?.data || response
     } catch (err) {
       error.value = err.message || 'Erreur lors de la récupération du flux de trésorerie'
       console.error(error.value, err)

@@ -9,17 +9,25 @@ class ReportController {
     // Créer une transaction
     async createTransaction(req, res, next) {
         try {
+            console.log('Données reçues:', req.body);
+            console.log('Utilisateur:', req.user);
+
             const transactionData = {
                 ...req.body,
-                recordedBy: req.user.id
+                recordedBy: req.user.id // Assurer que c'est bien l'ID utilisateur
             };
+
+            console.log('Données à sauvegarder:', transactionData);
+
             const transaction = await reportService.createTransaction(transactionData);
+
             res.status(201).json({
                 success: true,
                 message: 'Transaction créée avec succès',
                 data: transaction
             });
         } catch (error) {
+            console.error('Erreur dans createTransaction:', error);
             next(error);
         }
     }
@@ -226,28 +234,60 @@ class ReportController {
         try {
             const { campaignId } = req.query;
 
-            // Récupérer les données en parallèle
-            const [financialSummary, expenseAnalysis, cashFlow, feedStats, healthStats, lowStockFeeds, expiringFeeds, healthAlerts] = await Promise.all([
-                reportService.getFinancialSummary(campaignId),
-                reportService.getExpenseAnalysis(campaignId),
-                reportService.getCashFlowAnalysis(campaignId, 'monthly'),
-                feedService.getFeedStats(),
-                healthService.getHealthStatistics(campaignId),
-                feedService.getLowStockAlerts(),
-                feedService.getExpiringSoon(),
-                healthService.getHealthAlerts()
+            // Récupérer les données en parallèle avec gestion d'erreur
+            const results = await Promise.allSettled([
+                reportService.getFinancialSummary(campaignId).catch(err => {
+                    console.error('Financial summary error:', err.message);
+                    return { totalIncome: 0, totalExpense: 0, netProfit: 0, profitMargin: 0, details: [] };
+                }),
+                reportService.getExpenseAnalysis(campaignId).catch(err => {
+                    console.error('Expense analysis error:', err.message);
+                    return { totalExpenses: 0, categories: [] };
+                }),
+                reportService.getCashFlowAnalysis(campaignId, 'monthly').catch(err => {
+                    console.error('Cash flow error:', err.message);
+                    return [];
+                }),
+                feedService.getFeedStats().catch(err => {
+                    console.error('Feed stats error:', err.message);
+                    return { totalProducts: 0, totalValue: 0, byType: [], lowStockCount: 0 };
+                }),
+                healthService.getHealthStatistics(campaignId).catch(err => {
+                    console.error('Health stats error:', err.message);
+                    return { totalPrescriptions: 0, totalCost: 0, activePrescriptions: 0, completedPrescriptions: 0 };
+                }),
+                feedService.getLowStockFeeds().catch(err => {
+                    console.error('Low stock alerts error:', err.message);
+                    return [];
+                }),
+                feedService.getExpiringSoonFeeds().catch(err => {
+                    console.error('Expiring soon error:', err.message);
+                    return [];
+                }),
+                // healthService.getHealthAlerts().catch(err => {
+                //     console.error('Health alerts error:', err.message);
+                //     return [];
+                // })
+                Promise.resolve([]).catch(err => {
+                    console.error('Health alerts error:', err.message);
+                    return [];
+                })
             ]);
+
+            const [financialSummary, expenseAnalysis, cashFlow, feedStats, healthStats, lowStockFeeds, expiringFeeds] = results.map(result =>
+                result.status === 'fulfilled' ? result.value : result.reason
+            );
 
             const alerts = [];
             if (lowStockFeeds?.length > 0) {
-                alerts.push(`${lowStockFeeds.length} produits d'alimentation en rupture de stock`)   
+                alerts.push(`${lowStockFeeds.length} produits d'alimentation en rupture de stock`)
             }
             if (expiringFeeds?.length > 0) {
                 alerts.push(`${expiringFeeds.length} produits d'alimentation expirent prochainement`);
             }
-            if (healthAlerts?.length > 0) {
-                alerts.push(...healthAlerts.map(alert => alert.message || alert));
-            }
+            // if (healthAlerts?.length > 0) {
+            //     alerts.push(...healthAlerts.map(alert => alert.message || alert));
+            // }
             if (financialSummary?.netProfit < 0) {
                 alerts.push('Bénéfice net négatif, vérifier les dépenses');
             }
@@ -264,6 +304,7 @@ class ReportController {
                 }
             });
         } catch (error) {
+            console.error('Dashboard error:', error);
             next(error);
         }
     }

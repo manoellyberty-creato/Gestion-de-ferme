@@ -3,6 +3,8 @@ import authRoutes from './auth.routes.js';
 import userRoutes from './users.routes.js';
 import animalRoutes from './animals.routes.js';
 import campaignRoutes from './campaigns.routes.js';
+import categoryRoutes from './categories.routes.js';
+import departmentRoutes from './departments.routes.js';
 import feedRoutes from './feed.routes.js';
 import healthRoutes from './health.routes.js';
 import reportRoutes from './reports.routes.js';
@@ -20,7 +22,13 @@ router.use('/users', userRoutes);
 router.use('/animals', animalRoutes);
 
 // Routes des campagnes
-router.use("/campaign", campaignRoutes);
+router.use("/campaigns", campaignRoutes);
+
+// Routes des catégories
+router.use("/categories", categoryRoutes);
+
+// Routes des départements
+router.use("/departments", departmentRoutes);
 
 // Routes des alertes
 router.use("/alerts", alertRoutes);

@@ -1,4 +1,5 @@
 <script setup>
+import DashboardAdmin from './DashboardAdmin.vue'
 import { ref, computed, onMounted } from 'vue'
 import { useVeterinarianDashboard } from '../../stores/useVeterinarianDashboard'
 import PrescriptionCard from '../../components/veterinarian/PrescriptionCard.vue'
@@ -120,6 +121,10 @@ onMounted(async () => {
         🩺 Dashboard Vétérinaire
       </h1>
       <p class="text-gray-600">Gestion de la santé animale et des prescriptions</p>
+    </div>
+
+    <div class="mb-6">
+      <DashboardAdmin />
     </div>
 
     <!-- Campaign Selector -->

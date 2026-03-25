@@ -23,19 +23,30 @@ const departments = [
 
 async function seedDepartments() {
   try {
-    await connectDb()
+    console.log("🌱 Connexion à MongoDB...");
+    await connectDb();
+    console.log("✅ Connecté à MongoDB");
+
+    console.log("🌱 Ajout des départements...");
+    let count = 0;
     for (const dept of departments) {
-      await Department.updateOne(
+      const result = await Department.updateOne(
         { name: dept.name },
         { $set: dept },
         { upsert: true }
       );
+      count += result.upsertedCount || 0;
+      console.log(`  ✓ ${dept.name}`);
     }
-    console.log("Départements ajoutés avec succès");
+    
+    console.log(`✅ ${count} nouveau(x) département(s) ajouté(s)`);
   } catch (error) {
-    console.error("Erreur :", error);
-  }finally{
+    console.error("❌ Erreur :", error.message);
+    process.exit(1);
+  } finally {
     await disconnectDB();
+    process.exit(0);
   }
 }
+
 seedDepartments();

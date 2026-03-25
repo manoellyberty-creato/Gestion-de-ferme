@@ -43,6 +43,30 @@ router.post('/prescriptions',
     healthController.createPrescription
 );
 
+// Récupérer toutes les prescriptions
+router.get('/prescriptions',
+    requireRole(['veterinaire', 'admin', 'responsable', 'agent', 'comptable']),
+    healthController.getAllPrescriptions
+);
+
+// Récupérer une prescription par ID
+router.get('/prescriptions/:id',
+    requireRole(['veterinaire', 'admin', 'responsable', 'agent', 'comptable']),
+    healthController.getPrescriptionById
+);
+
+// Mettre à jour une prescription entière
+router.put('/prescriptions/:id',
+    requireRole(['veterinaire', 'admin']),
+    healthController.updatePrescription
+);
+
+// Supprimer une prescription
+router.delete('/prescriptions/:id',
+    requireRole(['veterinaire', 'admin']),
+    healthController.deletePrescription
+);
+
 // Récupérer les prescriptions d'un animal
 router.get('/animals/:animalId/prescriptions',
     requireRole(['veterinaire', 'admin', 'responsable', 'agent']),

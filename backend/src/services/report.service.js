@@ -10,10 +10,27 @@ class ReportService {
     // Créer une nouvelle transaction
     async createTransaction(transactionData) {
         try {
+            console.log('Création transaction avec données:', transactionData);
+
+            // Validation basique
+            if (!transactionData.type || !['income', 'expense'].includes(transactionData.type)) {
+                throw new Error('Type de transaction invalide');
+            }
+            if (!transactionData.category) {
+                throw new Error('Catégorie requise');
+            }
+            if (!transactionData.amount || transactionData.amount <= 0) {
+                throw new Error('Montant invalide');
+            }
+            if (!transactionData.description) {
+                throw new Error('Description requise');
+            }
+
             const transaction = new Transaction(transactionData);
             await transaction.save();
             return transaction;
         } catch (error) {
+            console.error('Erreur service createTransaction:', error.message);
             throw new Error(`Erreur lors de la création de la transaction: ${error.message}`);
         }
     }

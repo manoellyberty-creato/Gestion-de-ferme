@@ -108,11 +108,9 @@ export const CAMPAIGN_STATUSES = CAMPAIGN_STATUS;
 
 // === DÉPARTEMENTS ===
 export const DEPARTMENTS = {
-    PRODUCTION: 'production',
-    HEALTH: 'health',
-    FINANCE: 'finance',
-    OPERATIONS: 'operations',
-    LOGISTICS: 'logistics'
+    VOLAILLE: 'volaille',
+    BETAIL: 'betail',
+    PISCICULTURE: 'pisciculture'
 };
 
 // === OBJECTIFS DES CAMPAGNES ===

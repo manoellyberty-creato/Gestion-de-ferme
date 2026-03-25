@@ -36,8 +36,14 @@ export const useDashboard = defineStore('dashboard', () => {
     error.value = null
     try {
       const res = await reportService.getKPIs({ campaignId })
-      if (res.data && res.data.data) {
-        kpis.value = res.data.data
+      // Traitement des formats diff�rents : { success, data: {...} } ou { ... }
+      const payload = res?.data?.data || res?.data || res
+      kpis.value = {
+        totalRevenue: payload.totalRevenue || 0,
+        totalExpenses: payload.totalExpenses || 0,
+        netProfit: payload.netProfit || 0,
+        profitMargin: payload.profitMargin || 0,
+        roi: payload.roi ?? null
       }
     } catch (err) {
       error.value = err.message || 'Erreur lors du chargement des KPIs'
@@ -51,9 +57,15 @@ export const useDashboard = defineStore('dashboard', () => {
     error.value = null
     try {
       const res = await reportService.getDashboard({ campaignId })
-      if (res.data && res.data.data) {
-        dashboard.value = res.data.data
+      const payload = res?.data?.data || res?.data || res
+      dashboard.value = {
+        financialSummary: payload.financialSummary || null,
+        expenseAnalysis: payload.expenseAnalysis || [],
+        cashFlow: payload.cashFlow || [],
+        alerts: payload.alerts || []
       }
+      if (payload.feedStats) feedStats.value = payload.feedStats
+      if (payload.healthStats) healthStats.value = payload.healthStats
     } catch (err) {
       error.value = err.message || 'Erreur lors du chargement du tableau de bord'
     } finally {
@@ -64,9 +76,8 @@ export const useDashboard = defineStore('dashboard', () => {
   const fetchFeedStats = async () => {
     try {
       const res = await feedService.getFeedStatsSummary()
-      if (res.data) {
-        feedStats.value = res.data
-      }
+      const payload = res?.data?.data || res?.data || res
+      feedStats.value = payload || {}
     } catch (err) {
       console.warn('Feed stats unavailable:', err)
       feedStats.value = {}
@@ -76,9 +87,8 @@ export const useDashboard = defineStore('dashboard', () => {
   const fetchHealthStats = async () => {
     try {
       const res = await healthService.getHealthStatistics()
-      if (res.data) {
-        healthStats.value = res.data
-      }
+      const payload = res?.data?.data || res?.data || res
+      healthStats.value = payload || {}
     } catch (err) {
       console.warn('Health stats unavailable:', err)
       healthStats.value = {}

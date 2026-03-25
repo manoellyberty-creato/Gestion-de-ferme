@@ -132,7 +132,6 @@ const onLogin = async () => {
   </div>
 </template>
 
-
 <style scoped>
 .bg-login {
   /* Vite résoudra le chemin automatiquement depuis src/assets */

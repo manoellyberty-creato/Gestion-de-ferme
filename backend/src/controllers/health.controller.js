@@ -84,9 +84,7 @@ class HealthController {
                 message: 'Prescription créée avec succès',
                 data: prescription
             });
-        } catch (error) {
-            next(error);
-        }
+        } catch (error) { next(error) }
     }
 
     // Récupérer les prescriptions d'un animal
@@ -111,6 +109,60 @@ class HealthController {
             res.json({
                 success: true,
                 data: prescriptions
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    // Récupérer toutes les prescriptions
+    async getAllPrescriptions(req, res, next) {
+        try {
+            const filters = req.query;
+            const prescriptions = await healthService.getAllPrescriptions(filters);
+            res.json({
+                success: true,
+                data: prescriptions
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    // Récupérer une prescription par ID
+    async getPrescriptionById(req, res, next) {
+        try {
+            const prescription = await healthService.getPrescriptionById(req.params.id);
+            res.json({
+                success: true,
+                data: prescription
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    // Mettre à jour une prescription
+    async updatePrescription(req, res, next) {
+        try {
+            const prescription = await healthService.updatePrescription(req.params.id, req.body);
+            res.json({
+                success: true,
+                message: 'Prescription mise à jour avec succès',
+                data: prescription
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    // Supprimer une prescription
+    async deletePrescription(req, res, next) {
+        try {
+            await healthService.deletePrescription(req.params.id);
+            res.json({
+                success: true,
+                message: 'Prescription supprimée avec succès'
             });
         } catch (error) {
             next(error);

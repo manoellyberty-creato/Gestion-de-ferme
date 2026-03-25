@@ -17,12 +17,36 @@
     <!-- Category -->
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
-      <input
+      <select
         v-model="formData.category"
-        type="text"
-        placeholder="Ex: Alimentation, Vétérinaire..."
         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-      />
+      >
+        <option value="">-- Sélectionner --</option>
+        <!-- Revenus -->
+        <optgroup label="Revenus">
+          <option value="sale_animal">Vente d'animaux</option>
+          <option value="sale_eggs">Vente d'œufs</option>
+          <option value="sale_meat">Vente de viande</option>
+          <option value="sale_feathers">Vente de plumes</option>
+          <option value="sale_manure">Vente de fumier</option>
+          <option value="subsidy">Subventions</option>
+          <option value="investment">Investissements</option>
+          <option value="loan">Prêts</option>
+        </optgroup>
+        <!-- Dépenses -->
+        <optgroup label="Dépenses">
+          <option value="feed">Alimentation</option>
+          <option value="health">Santé animale</option>
+          <option value="labor">Main d'œuvre</option>
+          <option value="equipment">Équipement</option>
+          <option value="maintenance">Maintenance</option>
+          <option value="utilities">Services publics</option>
+          <option value="transport">Transport</option>
+          <option value="insurance">Assurance</option>
+          <option value="taxes">Taxes</option>
+          <option value="other_expense">Autres dépenses</option>
+        </optgroup>
+      </select>
       <span v-if="errors.category" class="text-red-500 text-xs mt-1">{{ errors.category }}</span>
     </div>
 
@@ -147,7 +171,13 @@ const validateForm = () => {
 const handleSubmit = async () => {
   if (!validateForm()) return
   try {
-    emit('success', formData.value)
+    // Nettoyer les données avant envoi
+    const cleanData = {
+      ...formData.value,
+      amount: Number(formData.value.amount),
+      campaign: formData.value.campaign || undefined, // Ne pas envoyer de string vide
+    }
+    emit('success', cleanData)
   } catch (err) {
     console.error('Erreur:', err)
   }
