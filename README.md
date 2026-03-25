@@ -31,7 +31,28 @@ Node.js minimum: **^20.19.0** ou **>=22.12.0**
 
 ## ⚡ Installation Rapide
 
-### 1️⃣ Cloner et installer
+### 🚀 Démarrage Ultra-Rapide (Recommandé)
+
+**Pour Windows:**
+```cmd
+# Double-cliquez sur start.bat ou exécutez:
+start.bat
+```
+
+**Pour Linux/Mac:**
+```bash
+# Rendez le script exécutable puis lancez:
+chmod +x start.sh
+./start.sh
+```
+
+**Résultat:** Base de données initialisée + services démarrés automatiquement!
+
+---
+
+### 🔧 Installation Manuelle
+
+#### 1️⃣ Cloner et installer
 
 ```bash
 # Dépendances Backend
@@ -43,9 +64,15 @@ cd ../frontend
 npm install
 ```
 
-### 2️⃣ Configurer les environnements
+#### 2️⃣ Configuration Base de Données
 
-**Backend** - Créer `backend/.env`:
+**🧠 Développement (MongoDB en Mémoire - Recommandé):**
+- Aucune configuration nécessaire!
+- MongoDB démarre automatiquement en mémoire
+- Données persistées pendant la session
+
+**☁️ Production (MongoDB Atlas):**
+Créer `backend/.env`:
 ```env
 MONGO_URL=mongodb+srv://username:password@clustername.mongodb.net/?appName=AppName
 DB_NAME=ferme_db
@@ -62,7 +89,7 @@ JWT_EXPIRES_IN=7d
 VITE_API_BASE_URL=http://localhost:7000/api
 ```
 
-### 3️⃣ Exécuter les seeders
+#### 3️⃣ Exécuter les seeders
 
 ```bash
 cd backend
@@ -74,7 +101,7 @@ npm run seed:departement
 npm run seed:category
 ```
 
-### 4️⃣ Démarrer l'application
+#### 4️⃣ Démarrer l'application
 
 **Terminal 1 - Backend** (port 7000):
 ```bash

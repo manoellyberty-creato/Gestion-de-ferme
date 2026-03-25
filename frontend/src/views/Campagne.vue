@@ -1,10 +1,12 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch, computed } from 'vue'
 import { useCampaignStore } from '@/stores/campaign.store.js'
 import CampaignFilterBar from '@/components/CampaignFilterBar.vue'
+import { notifyError, notifySuccess } from '@/utils/notifications'
 
 const store = useCampaignStore()
 const loading = ref(true)
+const error = ref(null)
 
 // État des filtres synchronisé avec CampaignFilterBar
 const filters = ref({
@@ -13,26 +15,37 @@ const filters = ref({
   search: ''
 })
 
-// Fonction utilitaire pour vérifier un rôle dans le tableau assignedAgents
-const hasRole = (item, roleName) => {
-  return item.assignedAgents?.some(agent => agent.role === roleName)
-}
+// Cache roles for each campaign (computed to avoid multiple calls)
+const campaignsWithRoles = computed(() => {
+  return (store.campaigns || []).map(campaign => ({
+    ...campaign,
+    roles: {
+      hasVeto: campaign.assignedAgents?.some(a => a.role === 'veterinaire') ?? false,
+      hasComptable: campaign.assignedAgents?.some(a => a.role === 'comptable') ?? false,
+      hasAgent: campaign.assignedAgents?.some(a => a.role === 'agent') ?? false,
+      hasManager: campaign.assignedAgents?.some(a => a.role === 'manager') ?? false,
+      hasAny: (campaign.assignedAgents?.length ?? 0) > 0
+    }
+  }))
+})
 
-// Computed pour le nom de la catégorie
+// Get category name safely
 const getCategoryName = (campaign) => {
   if (!campaign) return 'N/A'
   if (campaign.categoryId?.name) return campaign.categoryId.name
+  if (typeof campaign.categoryId === 'string') return campaign.categoryId
   return 'Sans catégorie'
 }
 
-// Computed pour le nom du département
+// Get department name safely
 const getDepartmentName = (campaign) => {
   if (!campaign) return 'N/A'
   if (campaign.department?.name) return campaign.department.name
+  if (typeof campaign.department === 'string') return campaign.department
   return 'Non défini'
 }
 
-// Formatage de la date
+// Date formatter
 const formatDate = (date) => {
   if (!date) return '-'
   return new Date(date).toLocaleDateString('fr-FR', {
@@ -42,36 +55,62 @@ const formatDate = (date) => {
   })
 }
 
-// Chargement des données via le Store
+// Load data from store
 const loadData = async () => {
   loading.value = true
+  error.value = null
   try {
-    const response = await store.fetchCampaigns(filters.value)
-    // Le store gère les données automatiquement
-    return response
-  } catch (error) {
-    console.error("Erreur chargement campagnes:", error)
+    await store.fetchCampaigns(filters.value)
+  } catch (err) {
+    error.value = err?.message || 'Erreur lors du chargement des campagnes'
+    notifyError(error.value)
+    console.error('Campaign load error:', err)
   } finally {
     loading.value = false
   }
 }
 
+// Initial data load
 onMounted(async () => {
-  // Charger catégories et départements pour les filtres
-  await Promise.all([
-    store.fetchCategories(),
-    store.fetchDepartments()
-  ])
-  // Puis charger les campagnes
-  await loadData()
+  try {
+    await Promise.all([
+      store.fetchCategories(),
+      store.fetchDepartments()
+    ])
+    await loadData()
+  } catch (err) {
+    error.value = 'Erreur lors de l\'initialisation'
+    notifyError(error.value)
+  }
 })
 
-// Watch profond pour recharger dès qu'un filtre change
-watch(filters, loadData, { deep: true })
+// Watch filters with debounce
+let filterTimeout
+const watchFilters = () => {
+  clearTimeout(filterTimeout)
+  filterTimeout = setTimeout(() => {
+    loadData()
+  }, 300)
+}
+
+watch(filters, watchFilters, { deep: true })
+
+// Handle campaign deletion
+const deleteCampaign = async (id) => {
+  if (!confirm('Êtes-vous sûr de vouloir supprimer cette campagne ?')) return
+  try {
+    await store.deleteCampaign(id)
+    notifySuccess('Campagne supprimée avec succès')
+    await loadData()
+  } catch (err) {
+    notifyError('Erreur lors de la suppression')
+  }
+}
 </script>
 
 <template>
   <div class="p-6 max-w-7xl mx-auto space-y-6">
+    <!-- Header Section -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
         <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Gestion des Campagnes</h1>
@@ -87,25 +126,21 @@ watch(filters, loadData, { deep: true })
       </router-link>
     </div>
 
+    <!-- Filters -->
     <CampaignFilterBar v-model="filters" />
-</script>
 
-<template>
-  <div class="p-6 max-w-7xl mx-auto space-y-6">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <!-- Error State -->
+    <div v-if="error && !loading" class="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+      <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+      </svg>
       <div>
-        <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Gestion des Campagnes</h1>
-        <p class="text-sm text-slate-500">Pilotez les opérations agricoles et assignez vos équipes.</p>
+        <p class="text-red-800 font-semibold">Erreur</p>
+        <p class="text-red-700 text-sm">{{ error }}</p>
       </div>
-
-      <router-link to="/campaigns/create"
-        class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-all shadow-sm shadow-blue-200">
-        + Nouvelle Campagne
-      </router-link>
     </div>
 
-    <CampaignFilterBar v-model="filters" />
-
+    <!-- Table Section -->
     <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
       <table class="w-full text-left border-collapse">
         <thead>
@@ -119,6 +154,7 @@ watch(filters, loadData, { deep: true })
         </thead>
 
         <tbody class="divide-y divide-slate-100">
+          <!-- Loading State -->
           <template v-if="loading">
             <tr v-for="i in 3" :key="`skeleton-${i}`" class="animate-pulse">
               <td class="p-4">
@@ -144,12 +180,16 @@ watch(filters, loadData, { deep: true })
             </tr>
           </template>
 
+          <!-- Data Rows -->
           <template v-else>
-            <tr v-for="item in store.campaigns" :key="item._id" class="hover:bg-slate-50/80 transition-colors">
+            <tr v-for="item in campaignsWithRoles" :key="item._id" class="hover:bg-slate-50/80 transition-colors">
+              <!-- Campaign Name -->
               <td class="p-4">
                 <p class="font-semibold text-slate-900">{{ item.name }}</p>
                 <p class="text-xs text-slate-500 mt-1">ID: {{ item._id?.slice(-8) }}</p>
               </td>
+
+              <!-- Localisation -->
               <td class="p-4">
                 <div class="space-y-1">
                   <span class="inline-block px-2 py-1 text-xs font-semibold rounded bg-blue-100 text-blue-700">
@@ -158,43 +198,80 @@ watch(filters, loadData, { deep: true })
                   <p class="text-xs text-slate-600">{{ getCategoryName(item) }}</p>
                 </div>
               </td>
+
+              <!-- Dates -->
               <td class="p-4 text-sm">
                 <div class="space-y-1">
-                  <p class="text-slate-700">{{ formatDate(item.startDate) }}</p>
+                  <p class="text-slate-700 font-medium">{{ formatDate(item.startDate) }}</p>
                   <p class="text-slate-500 text-xs">→ {{ formatDate(item.expectedEndDate) }}</p>
                 </div>
               </td>
+
+              <!-- Team (Roles) -->
               <td class="p-4">
                 <div class="flex -space-x-2">
-                  <div v-if="hasRole(item, 'veterinaire')" title="Vétérinaire"
-                    class="h-8 w-8 rounded-full bg-emerald-100 border-2 border-white flex items-center justify-center text-xs font-bold text-emerald-700 hover:scale-110 transition-transform">
-                    V</div>
-                  <div v-if="hasRole(item, 'comptable')" title="Comptable"
-                    class="h-8 w-8 rounded-full bg-blue-100 border-2 border-white flex items-center justify-center text-xs font-bold text-blue-700 hover:scale-110 transition-transform">
-                    C</div>
-                  <div v-if="hasRole(item, 'agent')" title="Agent"
-                    class="h-8 w-8 rounded-full bg-orange-100 border-2 border-white flex items-center justify-center text-xs font-bold text-orange-700 hover:scale-110 transition-transform">
-                    A</div>
-                  <div v-if="hasRole(item, 'manager')" title="Manager"
-                    class="h-8 w-8 rounded-full bg-purple-100 border-2 border-white flex items-center justify-center text-xs font-bold text-purple-700 hover:scale-110 transition-transform">
-                    M</div>
-                  <div v-if="!hasRole(item, 'veterinaire') && !hasRole(item, 'comptable') && !hasRole(item, 'agent') && !hasRole(item, 'manager')" 
-                    class="text-xs text-slate-400 italic">Aucune</div>
+                  <!-- Vétérinaire -->
+                  <div v-if="item.roles.hasVeto" 
+                    title="Vétérinaire"
+                    class="h-8 w-8 rounded-full bg-emerald-100 border-2 border-white flex items-center justify-center text-xs font-bold text-emerald-700 hover:scale-110 transition-transform cursor-help">
+                    V
+                  </div>
+
+                  <!-- Comptable -->
+                  <div v-if="item.roles.hasComptable"
+                    title="Comptable"
+                    class="h-8 w-8 rounded-full bg-blue-100 border-2 border-white flex items-center justify-center text-xs font-bold text-blue-700 hover:scale-110 transition-transform cursor-help">
+                    C
+                  </div>
+
+                  <!-- Agent -->
+                  <div v-if="item.roles.hasAgent"
+                    title="Agent"
+                    class="h-8 w-8 rounded-full bg-orange-100 border-2 border-white flex items-center justify-center text-xs font-bold text-orange-700 hover:scale-110 transition-transform cursor-help">
+                    A
+                  </div>
+
+                  <!-- Manager -->
+                  <div v-if="item.roles.hasManager"
+                    title="Manager"
+                    class="h-8 w-8 rounded-full bg-purple-100 border-2 border-white flex items-center justify-center text-xs font-bold text-purple-700 hover:scale-110 transition-transform cursor-help">
+                    M
+                  </div>
+
+                  <!-- No Team -->
+                  <div v-if="!item.roles.hasAny" class="text-xs text-slate-400 italic">
+                    Aucune
+                  </div>
                 </div>
               </td>
+
+              <!-- Actions -->
               <td class="p-4 text-right">
-                <router-link :to="`/campaigns/${item._id}`"
-                  class="inline-flex items-center px-3 py-1.5 text-sm font-semibold text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors">
-                  Gérer
-                  <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                  </svg>
-                </router-link>
+                <div class="flex items-center justify-end gap-2">
+                  <router-link :to="`/campaigns/${item._id}`"
+                    class="inline-flex items-center px-3 py-1.5 text-sm font-semibold text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
+                    title="Gérer la campagne">
+                    Gérer
+                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                  </router-link>
+                  
+                  <button
+                    @click="deleteCampaign(item._id)"
+                    class="inline-flex items-center px-3 py-1.5 text-sm font-semibold text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Supprimer la campagne">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                  </button>
+                </div>
               </td>
             </tr>
           </template>
 
-          <tr v-if="!loading && store.campaigns.length === 0">
+          <!-- Empty State -->
+          <tr v-if="!loading && campaignsWithRoles.length === 0">
             <td colspan="5" class="p-12 text-center">
               <div class="inline-flex flex-col items-center justify-center">
                 <svg class="w-16 h-16 text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -202,7 +279,8 @@ watch(filters, loadData, { deep: true })
                 </svg>
                 <p class="text-slate-600 font-medium text-lg mb-1">Aucune campagne</p>
                 <p class="text-slate-400 text-sm mb-4">Commencez par créer une nouvelle campagne pour démarrer.</p>
-                <router-link to="/campaigns/create" class="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+                <router-link to="/campaigns/create" 
+                  class="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors">
                   Créer une campagne
                 </router-link>
               </div>
@@ -213,3 +291,24 @@ watch(filters, loadData, { deep: true })
     </div>
   </div>
 </template>
+
+<style scoped>
+/* Smooth transitions */
+tr {
+  transition: background-color 0.2s ease-in-out;
+}
+
+/* Loading animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+</style>
