@@ -151,7 +151,11 @@ export async function unassignAgentFromCampaign(campaignId, userId) {
     campaign.assignedAgents.splice(assignmentIndex, 1);
     await campaign.save();
 
-    return campaign;
+    // ✅ Retourner la campagne complètement populée pour éviter l'affichage "Inconnu"
+    return await Campaign.findById(campaignId)
+        .populate("categoryId")
+        .populate("department")
+        .populate("assignedAgents.userId");
 }
 
 // ===> Récupération de toutes les campagnes d'un manager (AVEC PAGINATION & POPULATE)
@@ -213,6 +217,7 @@ export async function getCampaignsByCategory(categoryId, page = 1, limit = 10) {
         const campaigns = await Campaign.find({ categoryId: validCategoryId })
             .populate("department")
             .populate("categoryId")
+            .populate("assignedAgents.userId")
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
             .limit(limit);
@@ -408,8 +413,9 @@ export async function assignManagerToCampaign(campaignId, userId) {
     await campaign.save();
     // ✅ Retourner la campaign complètement populée pour la réactivité
     return await Campaign.findById(campaignId)
-        .populate("assignedAgents.userId")
-        .select("assignedAgents");
+        .populate("categoryId")
+        .populate("department")
+        .populate("assignedAgents.userId");
 }
 
 // ===> Assignation d'un agent à une campagne
@@ -460,8 +466,9 @@ export async function assignAgentToCampaign(campaignId, userId) {
     await campaign.save();
     // ✅ Retourner la campaign complètement populée pour la réactivité
     return await Campaign.findById(campaignId)
-        .populate("assignedAgents.userId")
-        .select("assignedAgents");
+        .populate("categoryId")
+        .populate("department")
+        .populate("assignedAgents.userId");
 }
 
 // ===> Assignation d'un vétérinaire à une campagne
@@ -511,8 +518,9 @@ export async function assignVeterinarianToCampaign(campaignId, userId) {
     await campaign.save();
     // ✅ Retourner la campaign complètement populée pour la réactivité
     return await Campaign.findById(campaignId)
-        .populate("assignedAgents.userId")
-        .select("assignedAgents");
+        .populate("categoryId")
+        .populate("department")
+        .populate("assignedAgents.userId");
 }
 
 // ===> Assignation d'un comptable à une campagne
@@ -564,6 +572,7 @@ export async function assignComptableToCampaign(campaignId, userId) {
     await campaign.save();
     // ✅ Retourner la campaign complètement populée pour la réactivité
     return await Campaign.findById(campaignId)
-        .populate("assignedAgents.userId")
-        .select("assignedAgents");
+        .populate("categoryId")
+        .populate("department")
+        .populate("assignedAgents.userId");
 }

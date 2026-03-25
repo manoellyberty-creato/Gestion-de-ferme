@@ -148,9 +148,10 @@ export const useCampaignStore = defineStore('campaign', {
 
         const res = await api.put(`${API_BASE}/${slug}/${campaignId}/${userId}`)
         
-        // ✅ Mise à jour réactive : res.data contient assignedAgents populé avec userId enrichis
+        // ✅ Mise à jour réactive complète : backend retourne la campagne populée
         if (this.currentCampaign && this.currentCampaign._id === campaignId) {
-          this.currentCampaign.assignedAgents = res.data?.assignedAgents || res.data
+          // Remplacer la campagne entière pour garantir la réactivité
+          this.currentCampaign = res.data
         }
         return { success: true, data: res.data }
       } catch (err) {
@@ -163,8 +164,9 @@ export const useCampaignStore = defineStore('campaign', {
       try {
         const res = await api.delete(`${API_BASE}/unassign/${campaignId}/${userId}`)
         
-        if (this.currentCampaign) {
-          // Ton service renvoie la campagne mise à jour
+        // ✅ Remplacer la campagne entière pour garantir la réactivité
+        // Le backend retourne maintenant la campagne complètement populée
+        if (this.currentCampaign && this.currentCampaign._id === campaignId) {
           this.currentCampaign = res.data
         }
         return { success: true }

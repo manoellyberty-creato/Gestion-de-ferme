@@ -106,7 +106,10 @@
             </div>
 
             <aside class="space-y-6">
-                <CampaignTeamManager @open-assign="openAssignModal" />
+                <CampaignTeamManager 
+            @open-assign="openAssignModal" 
+            @remove-member="removeAssignedAgent"
+        />
 
                 <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
                     <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
