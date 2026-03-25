@@ -13,7 +13,7 @@
                         <span class="mr-1 group-hover:-translate-x-1 transition-transform">←</span> Retour
                     </button>
                     <span :class="statusClasses" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider shadow-sm">
-                        {{ campaign.status }}
+                        {{ statusLabel }}
                     </span>
                 </div>
                 <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">{{ campaign.name }}</h1>
@@ -216,10 +216,22 @@ const remainingBudget = computed(() => {
 
 const statusClasses = computed(() => {
     const s = campaign.value?.status
-    if (s === 'Brouillon') return 'bg-amber-100 text-amber-700 border border-amber-200'
-    if (s === 'En cours') return 'bg-emerald-100 text-emerald-700 border border-emerald-200'
-    if (s === 'Terminée') return 'bg-slate-100 text-slate-700 border border-slate-200'
-    return 'bg-blue-100 text-blue-700 border border-blue-200'
+    const statusLabels = {
+        'preparation': 'bg-amber-100 text-amber-700 border border-amber-200',
+        'active': 'bg-emerald-100 text-emerald-700 border border-emerald-200',
+        'completed': 'bg-slate-100 text-slate-700 border border-slate-200'
+    }
+    return statusLabels[s] || 'bg-blue-100 text-blue-700 border border-blue-200'
+})
+
+const statusLabel = computed(() => {
+    const s = campaign.value?.status
+    const labels = {
+        'preparation': 'Préparation',
+        'active': 'En cours',
+        'completed': 'Terminée'
+    }
+    return labels[s] || s
 })
 
 // MÉTHODES
@@ -238,13 +250,21 @@ const openAssignModal = (role) => {
 }
 
 const handleConfirmAssign = async (userId) => {
-    const res = await store.assignMember({
-        campaignId: campaign.value._id,
-        userId: userId,
-        role: selectedRoleForAssign.value
-    })
-    if (res.success) isAssignModalOpen.value = false
-    else alert(res.error || "Échec de l'assignation")
+    try {
+        const res = await store.assignMember({
+            campaignId: campaign.value._id,
+            userId: userId,
+            role: selectedRoleForAssign.value
+        })
+        if (res.success) {
+            isAssignModalOpen.value = false
+        } else {
+            alert(res.error || "Échec de l'assignation")
+        }
+    } catch (err) {
+        console.error("Erreur lors de l'assignation:", err)
+        alert("Erreur lors de l'assignation: " + err.message)
+    }
 }
 
 const removeAssignedAgent = async (member) => {
@@ -254,14 +274,24 @@ const removeAssignedAgent = async (member) => {
 }
 
 const handleStatusChange = async () => {
-    const statusCycle = { 'Brouillon': 'En cours', 'En cours': 'Terminée', 'Terminée': 'Brouillon' }
-    const nextStatus = statusCycle[campaign.value.status] || 'Brouillon'
+    const statusCycle = {
+        'preparation': 'active',
+        'active': 'completed',
+        'completed': 'preparation'
+    }
+    const statusLabels = {
+        'preparation': 'Préparation',
+        'active': 'En cours',
+        'completed': 'Terminée'
+    }
+    const nextStatus = statusCycle[campaign.value.status] || 'preparation'
+    const nextLabel = statusLabels[nextStatus] || 'Préparation'
     
-    if (!confirm(`Passer la campagne en "${nextStatus}" ?`)) return
+    if (!confirm(`Passer la campagne en "${nextLabel}" ?`)) return
 
     isUpdating.value = true
     const res = await store.updateCampaign(campaign.value._id, { status: nextStatus })
-    if (!res.success) alert(res.error)
+    if (!res.success) alert(res.error || "Erreur lors du changement de statut")
     isUpdating.value = false
 }
 

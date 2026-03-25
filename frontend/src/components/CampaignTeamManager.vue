@@ -1,5 +1,7 @@
 <script setup>
 import { useCampaignStore } from "@/stores/campaign.store";
+import { computed } from "vue";
+
 const store = useCampaignStore();
 
 const roles = [
@@ -9,9 +11,11 @@ const roles = [
   { id: "comptable", label: "Comptable" },
 ];
 
+// ✅ Utiliser computed pour garantir la réactivité sur chaque accès
+const assignedAgents = computed(() => store.currentCampaign?.assignedAgents || []);
+
 const getMemberName = (roleId) => {
-  const agents = store.currentCampaign?.assignedAgents || [];
-  const member = agents.find((a) => a.role === roleId);
+  const member = assignedAgents.value.find((a) => a.role === roleId);
   return member?.userId?.name || "Non assigné";
 };
 </script>

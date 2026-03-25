@@ -5,6 +5,7 @@ import Animal from "../models/Animal.js";
 import Department from "../models/Departement.js";
 import mongoose from "mongoose";
 import qrCodeService from "../services/qrCode.service.js";
+import { CAMPAIGN_STATUS } from "../utils/constants.js";
 
 // ===> Création d'une campagne
 export async function createCampaign(data, userId) {
@@ -256,7 +257,11 @@ export async function updateCampaign(campaignId, data) {
         categoryId,
         startDate,
         expectedEndDate,
-        budget
+        budget,
+        status,
+        description,
+        goal,
+        goalMetrics
     } = data;
 
     // === Validation du nom
@@ -264,6 +269,16 @@ export async function updateCampaign(campaignId, data) {
         const error = new Error("Le nom de la campagne est trop court");
         error.statusCode = 400;
         throw error;
+    }
+
+    // === Validation du statut
+    if (status) {
+        const validStatuses = Object.values(CAMPAIGN_STATUS);
+        if (!validStatuses.includes(status)) {
+            const error = new Error(`Statut invalide. Valeurs acceptées: ${validStatuses.join(', ')}`);
+            error.statusCode = 400;
+            throw error;
+        }
     }
 
     // === Vérification de la catégorie
@@ -295,12 +310,24 @@ export async function updateCampaign(campaignId, data) {
         throw error;
     }
 
-    // === Mise à jour
+    // === Mise à jour (avec populate)
+    const updateData = {
+        ...(name && { name }),
+        ...(categoryId && { categoryId }),
+        ...(startDate && { startDate }),
+        ...(expectedEndDate && { expectedEndDate }),
+        ...(budget !== undefined && { budget }),
+        ...(status && { status }),
+        ...(description !== undefined && { description }),
+        ...(goal && { goal }),
+        ...(goalMetrics && { goalMetrics })
+    };
+
     const campaign = await Campaign.findByIdAndUpdate(
         campaignId,
-        data,
+        updateData,
         { new: true, runValidators: true }
-    );
+    ).populate('categoryId').populate('department').populate('assignedAgents.userId');
 
     if (!campaign) {
         const error = new Error("La campagne n'existe pas");
@@ -379,7 +406,10 @@ export async function assignManagerToCampaign(campaignId, userId) {
     });
 
     await campaign.save();
-    return campaign.assignedAgents;
+    // ✅ Retourner la campaign complètement populée pour la réactivité
+    return await Campaign.findById(campaignId)
+        .populate("assignedAgents.userId")
+        .select("assignedAgents");
 }
 
 // ===> Assignation d'un agent à une campagne
@@ -428,7 +458,10 @@ export async function assignAgentToCampaign(campaignId, userId) {
     });
 
     await campaign.save();
-    return campaign.assignedAgents;
+    // ✅ Retourner la campaign complètement populée pour la réactivité
+    return await Campaign.findById(campaignId)
+        .populate("assignedAgents.userId")
+        .select("assignedAgents");
 }
 
 // ===> Assignation d'un vétérinaire à une campagne
@@ -476,7 +509,10 @@ export async function assignVeterinarianToCampaign(campaignId, userId) {
         role: "veterinaire"
     });
     await campaign.save();
-    return campaign.assignedAgents;
+    // ✅ Retourner la campaign complètement populée pour la réactivité
+    return await Campaign.findById(campaignId)
+        .populate("assignedAgents.userId")
+        .select("assignedAgents");
 }
 
 // ===> Assignation d'un comptable à une campagne
@@ -526,5 +562,8 @@ export async function assignComptableToCampaign(campaignId, userId) {
     });
 
     await campaign.save();
-    return campaign.assignedAgents;
+    // ✅ Retourner la campaign complètement populée pour la réactivité
+    return await Campaign.findById(campaignId)
+        .populate("assignedAgents.userId")
+        .select("assignedAgents");
 }

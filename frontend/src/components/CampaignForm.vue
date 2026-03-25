@@ -34,7 +34,7 @@ const form = reactive({
 const errors = reactive({})
 const isSubmitting = ref(false)
 const feedback = ref('')
-const goals = ['PRODUCTION', 'REPRODUCTION', 'TRANSFORMATION', 'MAINTENANCE']
+const goals = ['production', 'reproduction', 'transformation', 'maintenance']
 const loadingData = ref(true)
 
 const syncSpeciesCategories = (count) => {
@@ -64,6 +64,16 @@ const removeSpeciesCategory = (index) => {
 const clearErrors = () => {
   Object.keys(errors).forEach(key => delete errors[key])
   feedback.value = ''
+}
+
+const formatGoalLabel = (goal) => {
+  const labels = {
+    'production': 'Production',
+    'reproduction': 'Reproduction',
+    'transformation': 'Transformation',
+    'maintenance': 'Maintenance'
+  }
+  return labels[goal] || goal
 }
 
 const validate = () => {
@@ -238,7 +248,7 @@ onMounted(async () => {
         Objectif
         <select v-model="form.goal" class="mt-1 w-full rounded-lg border border-slate-300 p-2">
           <option value="">Sélectionner un objectif</option>
-          <option v-for="g in goals" :key="g" :value="g">{{ g }}</option>
+          <option v-for="g in goals" :key="g" :value="g">{{ formatGoalLabel(g) }}</option>
         </select>
         <p v-if="errors.goal" class="text-rose-600 text-xs mt-1">{{ errors.goal }}</p>
       </label>

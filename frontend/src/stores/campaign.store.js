@@ -80,7 +80,7 @@ export const useCampaignStore = defineStore('campaign', {
     async fetchCampaignById(id) {
       this.loading = true
       try {
-        const res = await axios.get(`${API_BASE}/${id}`)
+        const res = await api.get(`${API_BASE}/${id}`)
         this.currentCampaign = res.data
         return { success: true }
       } catch (err) {
@@ -105,7 +105,7 @@ export const useCampaignStore = defineStore('campaign', {
     // 4. MODIFICATION (updateCampaignController)
     async updateCampaign(id, data) {
       try {
-        const res = await axios.patch(`${API_BASE}/update/${id}`, data)
+        const res = await api.patch(`${API_BASE}/update/${id}`, data)
         this.currentCampaign = res.data
         return { success: true }
       } catch (err) {
@@ -116,7 +116,7 @@ export const useCampaignStore = defineStore('campaign', {
     // 5. SUPPRESSION (deleteCampaignController)
     async deleteCampaign(id) {
       try {
-        await axios.delete(`${API_BASE}/delete/${id}`)
+        await api.delete(`${API_BASE}/delete/${id}`)
         this.campaigns = this.campaigns.filter(c => c._id !== id)
         return { success: true }
       } catch (err) {
@@ -126,7 +126,7 @@ export const useCampaignStore = defineStore('campaign', {
 
     async fetchCampaignAnimals(campaignId) {
       try {
-        const res = await axios.get(`/api/animals?campaignId=${campaignId}`)
+        const res = await api.get(`/animals?campaignId=${campaignId}`)
         this.campaignAnimals = res.data.data || res.data
         return { success: true, data: this.campaignAnimals }
       } catch (err) {
@@ -139,20 +139,20 @@ export const useCampaignStore = defineStore('campaign', {
         let slug = ''
         // On calque exactement tes routes Express
         switch (role) {
-          case 'agent': slug = 'assign-agent'; break
-          case 'manager': slug = 'assign-manager'; break
-          case 'veterinaire': slug = 'assign-veterinaire'; break
-          case 'comptable': slug = 'assign-comptable'; break
+          case 'agent': slug = 'assignAgent'; break
+          case 'manager': slug = 'assignManager'; break
+          case 'veterinaire': slug = 'assignVeterinarian'; break
+          case 'comptable': slug = 'assignComptable'; break
           default: throw new Error("Rôle non supporté")
         }
 
-        const res = await axios.post(`${API_BASE}/${campaignId}/${slug}/${userId}`)
+        const res = await api.put(`${API_BASE}/${slug}/${campaignId}/${userId}`)
         
-        // Mise à jour du state local pour le rendu immédiat
+        // ✅ Mise à jour réactive : res.data contient assignedAgents populé avec userId enrichis
         if (this.currentCampaign && this.currentCampaign._id === campaignId) {
-          this.currentCampaign.assignedAgents = res.data
+          this.currentCampaign.assignedAgents = res.data?.assignedAgents || res.data
         }
-        return { success: true }
+        return { success: true, data: res.data }
       } catch (err) {
         return { success: false, error: err.response?.data?.message }
       }
@@ -161,7 +161,7 @@ export const useCampaignStore = defineStore('campaign', {
     // 7. DÉSASSIGNATION (unassignAgentFromCampaignController)
     async unassignMember(campaignId, userId) {
       try {
-        const res = await axios.delete(`${API_BASE}/${campaignId}/unassign/${userId}`)
+        const res = await api.delete(`${API_BASE}/unassign/${campaignId}/${userId}`)
         
         if (this.currentCampaign) {
           // Ton service renvoie la campagne mise à jour
