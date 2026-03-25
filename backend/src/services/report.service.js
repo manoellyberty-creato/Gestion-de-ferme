@@ -36,7 +36,7 @@ class ReportService {
     }
 
     // Récupérer les transactions avec filtres
-    async getTransactions(filters = {}, page = 1, limit = 50, user = null) {
+    async getTransactions(filters = {}, page = 1, limit = 50) {
         try {
             const query = {};
 
@@ -49,13 +49,6 @@ class ReportService {
                 query.date = {};
                 if (filters.startDate) query.date.$gte = new Date(filters.startDate);
                 if (filters.endDate) query.date.$lte = new Date(filters.endDate);
-            }
-
-            // Contrôle d'accès par rôle :
-            // - Les comptables et admins voient TOUTES les transactions
-            // - Les autres rôles ne voient que leurs propres transactions
-            if (user && !['comptable', 'admin'].includes(user.role)) {
-                query.recordedBy = user.id;
             }
 
             // Pagination manuelle
