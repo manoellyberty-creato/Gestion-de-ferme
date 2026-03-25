@@ -149,9 +149,6 @@ onMounted(async () => {
       <p class="text-gray-600">Gestion financière, audits et réconciliations</p>
     </div>
 
-    <div class="mb-6">
-      <DashboardAdmin />
-    </div>
 
     <!-- Date Range & Campaign Selector -->
     <div class="card bg-white rounded-lg shadow-md p-6 mb-6">

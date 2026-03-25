@@ -3,7 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 // Importations des vues
 import Login from '../views/Login.vue'
 import DashboardAdmin from '../views/Dashboard/DashboardAdmin.vue'
-import DashboardGerant from '../views/Dashboard/DashboardGerant.vue'
+import DashboardManager from '../views/Dashboard/DashboardManager.vue'
 import DashboardVeto from '../views/Dashboard/DashboardVeto.vue'
 import DashboardAgent from '../views/Dashboard/DashboardAgent.vue'
 import DashboardComptable from '../views/Dashboard/DashboardComptable.vue'
@@ -31,7 +31,7 @@ const routes = [
   {
     path: '/manager-dashboard',
     name: 'manager', 
-    component: DashboardGerant,
+    component: DashboardManager,
     meta: { requiresAuth: true, role: 'manager' } 
   },
   {
