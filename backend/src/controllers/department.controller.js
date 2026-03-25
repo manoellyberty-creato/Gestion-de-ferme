@@ -1,29 +1,21 @@
-import Department from "../models/Departement.js"
+import Department from '../models/Departement.js';
+import Animal from '../models/Animal.js';
 
-// ===> Récupération de tous les départements
-export async function getAllDepartmentsController(req, res) {
+export const getAllWithStats = async (req, res) => {
   try {
-    const departments = await Department.find({ isActive: true }).sort({ name: 1 })
-    res.status(200).json(departments)
-  } catch (error) {
-    res.status(error.statusCode || 500).json({ message: error.message })
-  }
-}
+    const departments = await Department.find();
+    
+    // On enrichit chaque département avec le nombre d'animaux
+    const results = await Promise.all(departments.map(async (dept) => {
+      const count = await Animal.countDocuments({ department: dept._id });
+      return {
+        ...dept._doc,
+        animalCount: count
+      };
+    }));
 
-// ===> Récupération d'un département par id
-export async function getDepartmentByIdController(req, res) {
-  try {
-    const departmentId = req.params.departmentId
-    const department = await Department.findById(departmentId)
-    
-    if (!department) {
-      const error = new Error("Département non trouvé")
-      error.statusCode = 404
-      throw error
-    }
-    
-    res.status(200).json(department)
-  } catch (error) {
-    res.status(error.statusCode || 500).json({ message: error.message })
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
-}
+};

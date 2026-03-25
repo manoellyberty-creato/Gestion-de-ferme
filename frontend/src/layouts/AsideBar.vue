@@ -31,6 +31,14 @@ const menuItems = [
           </svg>`
   },
   { 
+    name: 'Les Animaux', 
+    path: '/allanimals', 
+    roles: ['admin', 'manager', "agent", "veterinaire"],
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.307a.515.515 0 0 0 .799-.037l7.039-10.389m-19.144 6.421 2.123 2.123c.42.42 1.07.54 1.62.383l4.74-1.353a1.5 1.5 0 0 1 1.611.411l3.478 3.479a1.5 1.5 0 0 0 2.145 0l5.959-5.959A1.5 1.5 0 0 0 21 14.542V19.5a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 19.5v-1.5a2.25 2.25 0 0 1 .75-1.687l.45-.421" />
+          </svg>`
+  },
+  { 
     name: 'Département', 
     path: '/departement', 
     roles: ['admin', 'manager', 'agent'],

@@ -1,9 +1,6 @@
-import api from './api.js'
+import axios from "axios";
+const API_URL = "http://localhost:7000/api/departments";
 
-export function getAllDepartments(params) {
-  return api.get('/departments', { params })
-}
-
-export function getDepartmentById(id) {
-  return api.get(`/departments/${id}`)
-}
+export const departmentService = {
+  getAll: () => axios.get(API_URL).then(res => res.data),
+};

@@ -306,8 +306,7 @@ class ReportService {
                         category: '$_id',
                         total: 1,
                         count: 1,
-                        average: 1,
-                        percentage: 0 // Sera calculé après
+                        average: 1
                     }
                 },
                 { $sort: { total: -1 } }
