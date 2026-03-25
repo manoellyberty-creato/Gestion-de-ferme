@@ -1,4 +1,4 @@
-import Department from "../models/Departement.js";
+import Department from "../models/Department.js";
 import { DEPARTMENTS } from "../utils/constants.js";
 import { connectDb, disconnectDB } from "../db/database.js";
 import "dotenv/config";

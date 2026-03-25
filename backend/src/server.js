@@ -1,7 +1,7 @@
 import app from "./app.js";
 import { connectDb, disconnectDB } from "./db/database.js";
 import 'dotenv/config';
-const PORT = process.env.PORT ?? 3000;
+const PORT = process.env.PORT ?? 7000;
 
 try {
     await connectDb();

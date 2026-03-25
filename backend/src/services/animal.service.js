@@ -25,7 +25,7 @@ class AnimalService {
             }
 
             const animals = await Animal.find(query)
-                .populate('campaign', 'name type startDate endDate')
+                .populate('campaignId', 'name type startDate endDate')
                 .sort({ createdAt: -1 });
 
             return animals;

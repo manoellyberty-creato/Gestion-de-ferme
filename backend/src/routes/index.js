@@ -8,6 +8,7 @@ import healthRoutes from './health.routes.js';
 import reportRoutes from './reports.routes.js';
 import meRoutes from './me.routes.js';
 import alertRoutes from './alerts.routes.js';
+import departementRoutes from './department.routes.js';
 import { Router } from 'express';
 const router = Router();
  
@@ -18,6 +19,8 @@ router.use('/users', userRoutes);
 
 // Routes des animaux
 router.use('/animals', animalRoutes);
+
+router.use('/departments',departementRoutes)
 
 // Routes des campagnes
 router.use("/campaign", campaignRoutes);

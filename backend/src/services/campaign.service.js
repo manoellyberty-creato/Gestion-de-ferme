@@ -2,7 +2,7 @@ import Campaign from "../models/Campaign.js";
 import Category from "../models/Category.js";
 import User from "../models/User.js";
 import Animal from "../models/Animal.js";
-import Department from "../models/Departement.js";
+import Department from "../models/Department.js";
 import mongoose from "mongoose";
 
 // ===> Création d'une campagne
