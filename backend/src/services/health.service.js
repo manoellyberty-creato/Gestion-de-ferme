@@ -75,6 +75,19 @@ class HealthService {
         }
     }
 
+    // Supprimer définitivement un produit de santé
+    async deleteHealthProduct(id) {
+        try {
+            const product = await Health.findByIdAndDelete(id);
+            if (!product) {
+                throw new Error('Produit de santé non trouvé');
+            }
+            return product;
+        } catch (error) {
+            throw new Error(`Erreur lors de la suppression du produit: ${error.message}`);
+        }
+    }
+
     // === GESTION DES PRESCRIPTIONS ===
 
     // Créer une nouvelle prescription
@@ -87,7 +100,7 @@ class HealthService {
                 if (!product) {
                     throw new Error(`Produit ${item.product} non trouvé`);
                 }
-                item.cost = product.costPerUnit * item.quantity;
+                item.cost = product.unitPrice * item.quantity;
                 totalCost += item.cost;
             }
 
@@ -123,7 +136,7 @@ class HealthService {
                 .populate('animal', 'name tagNumber species')
                 .populate('campaign', 'name startDate endDate')
                 .populate('veterinarian', 'name email')
-                .populate('prescribedProducts.product', 'name type dosage costPerUnit')
+                .populate('prescribedProducts.product', 'name type dosage unitPrice')
                 .sort({ prescriptionDate: -1 });
         } catch (error) {
             throw new Error(`Erreur lors de la récupération des prescriptions: ${error.message}`);
@@ -177,7 +190,7 @@ class HealthService {
                 .populate('animal', 'name tagNumber species')
                 .populate('campaign', 'name startDate endDate')
                 .populate('veterinarian', 'name email')
-                .populate('prescribedProducts.product', 'name type dosage costPerUnit')
+                .populate('prescribedProducts.product', 'name type dosage unitPrice')
                 .sort({ prescriptionDate: -1 });
         } catch (error) {
             throw new Error(`Erreur lors de la récupération des prescriptions: ${error.message}`);
@@ -191,7 +204,7 @@ class HealthService {
                 .populate('animal', 'name tagNumber species')
                 .populate('campaign', 'name startDate endDate')
                 .populate('veterinarian', 'name email')
-                .populate('prescribedProducts.product', 'name type dosage costPerUnit');
+                .populate('prescribedProducts.product', 'name type dosage unitPrice');
             if (!prescription) {
                 throw new Error('Prescription non trouvée');
             }
@@ -210,7 +223,7 @@ class HealthService {
                 { new: true, runValidators: true }
             )
             .populate('animal campaign veterinarian')
-            .populate('prescribedProducts.product', 'name type dosage costPerUnit');
+            .populate('prescribedProducts.product', 'name type dosage unitPrice');
 
             if (!prescription) {
                 throw new Error('Prescription non trouvée');

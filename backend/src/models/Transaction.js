@@ -13,11 +13,11 @@ const transactionSchema = new mongoose.Schema({
         type: String,
         enum: [
             // Revenus
-            'sale_animal', 'sale_eggs', 'sale_meat', 'sale_feathers', 'sale_manure',
-            'subsidy', 'investment', 'loan',
+            "Vente d'animaux", "Vente d'œufs", "Vente de viande", "Vente de plumes", "Vente de fumier",
+            "Subventions", "Investissements", "Prêts",
             // Dépenses
-            'feed', 'health', 'labor', 'equipment', 'maintenance', 'utilities',
-            'transport', 'insurance', 'taxes', 'other_expense'
+            "Alimentation", "Santé animale", "Main d'œuvre", "Équipement", "Maintenance", "Services publics",
+            "Transport", "Assurance", "Taxes", "Autres dépenses"
         ],
         required: true,
     },

@@ -42,6 +42,10 @@ export function deletePrescription(id) {
   return api.delete(`/health/prescriptions/${id}`)
 }
 
+export function updatePrescriptionStatus(id, status) {
+  return api.patch(`/health/prescriptions/${id}/status`, { status })
+}
+
 export function getAnimalPrescriptions(animalId) {
   return api.get(`/health/animals/${animalId}/prescriptions`)
 }

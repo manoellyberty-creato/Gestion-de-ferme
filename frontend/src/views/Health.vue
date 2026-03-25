@@ -1,109 +1,114 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useHealth } from '../stores/useHealth'
-import HealthProductCard from '../components/health/HealthProductCard.vue'
-import HealthProductForm from '../components/health/HealthProductForm.vue'
-import PrescriptionCard from '../components/health/PrescriptionCard.vue'
-import PrescriptionForm from '../components/health/PrescriptionForm.vue'
+import { ref, computed, onMounted } from "vue";
+import { useHealth } from "../stores/useHealth";
+import HealthProductCard from "../components/health/HealthProductCard.vue";
+import HealthProductForm from "../components/health/HealthProductForm.vue";
+import PrescriptionCard from "../components/health/PrescriptionCard.vue";
+import PrescriptionForm from "../components/health/PrescriptionForm.vue";
 
-const healthStore = useHealth()
-const activeTab = ref('products')
-const showProductForm = ref(false)
-const showPrescriptionForm = ref(false)
-const editingProduct = ref(null)
-const editingPrescription = ref(null)
-const searchProductsQuery = ref('')
-const filterStatus = ref('')
+const healthStore = useHealth();
+const activeTab = ref("products");
+const showProductForm = ref(false);
+const showPrescriptionForm = ref(false);
+const editingProduct = ref(null);
+const editingPrescription = ref(null);
+const searchProductsQuery = ref("");
+const filterStatus = ref("");
 
 const filteredPrescriptions = computed(() => {
-  return healthStore.prescriptions.filter(p => {
-    if (filterStatus.value && p.status !== filterStatus.value) return false
-    return true
-  })
-})
+  return healthStore.prescriptions.filter((p) => {
+    if (filterStatus.value && p.status !== filterStatus.value) return false;
+    return true;
+  });
+});
 
 const loadProducts = async () => {
   try {
     if (searchProductsQuery.value) {
       // Implémenter recherche si backend le supporte
     } else {
-      await healthStore.fetchProducts()
+      await healthStore.fetchProducts();
     }
   } catch (err) {
-    console.error('Erreur:', err)
+    console.error("Erreur:", err);
   }
-}
+};
 
 const loadPrescriptions = async () => {
   try {
-    await healthStore.fetchPrescriptions()
+    await healthStore.fetchPrescriptions();
   } catch (err) {
-    console.error('Erreur:', err)
+    console.error("Erreur:", err);
   }
-}
+};
 
 const handleEditProduct = (product) => {
-  editingProduct.value = product
-  showProductForm.value = true
-}
+  editingProduct.value = product;
+  showProductForm.value = true;
+};
 
 const handleDeleteProduct = async (id) => {
-  if (confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
+  if (confirm("Êtes-vous sûr de vouloir supprimer ce produit ?")) {
     try {
-      await healthStore.deleteProduct(id)
+      await healthStore.deleteProduct(id);
     } catch (err) {
-      console.error('Erreur:', err)
+      console.error("Erreur:", err);
     }
   }
-}
+};
 
-const handleProductFormSuccess = () => {
-  closeProductForm()
-  loadProducts()
-}
-
+const handleProductFormSuccess = async () => {
+  showProductForm.value = false;
+  editingProduct.value = null;
+  
+  await healthStore.fetchProducts(); 
+};
 const closeProductForm = () => {
-  showProductForm.value = false
-  editingProduct.value = null
-}
+  showProductForm.value = false;
+  editingProduct.value = null;
+};
 
 const handleEditPrescription = (prescription) => {
-  editingPrescription.value = prescription
-  showPrescriptionForm.value = true
-}
+  editingPrescription.value = prescription;
+  showPrescriptionForm.value = true;
+};
 
 const handleDeletePrescription = async (id) => {
-  if (confirm('Êtes-vous sûr de vouloir supprimer cette prescription ?')) {
+  if (confirm("Êtes-vous sûr de vouloir supprimer cette prescription ?")) {
     try {
-      await healthStore.deletePrescription(id)
+      await healthStore.deletePrescription(id);
     } catch (err) {
-      console.error('Erreur:', err)
+      console.error("Erreur:", err);
     }
   }
-}
+};
 
 const handlePrescriptionFormSuccess = () => {
-  closePrescriptionForm()
-  loadPrescriptions()
-}
+  closePrescriptionForm();
+  loadPrescriptions();
+};
 
 const closePrescriptionForm = () => {
-  showPrescriptionForm.value = false
-  editingPrescription.value = null
-}
+  showPrescriptionForm.value = false;
+  editingPrescription.value = null;
+};
 
 onMounted(() => {
-  loadProducts()
-  loadPrescriptions()
-})
+  loadProducts();
+  loadPrescriptions();
+});
 </script>
 
 <template>
   <div class="space-y-6">
     <!-- Header -->
     <div>
-      <h1 class="text-3xl font-bold text-gray-900">Gestion de la Santé Animale</h1>
-      <p class="text-gray-600 mt-1">Produits de santé, prescriptions et suivi vétérinaire</p>
+      <h1 class="text-3xl font-bold text-gray-900">
+        Gestion de la Santé Animale
+      </h1>
+      <p class="text-gray-600 mt-1">
+        Produits de santé, prescriptions et suivi vétérinaire
+      </p>
     </div>
 
     <!-- Tabs -->
@@ -115,7 +120,7 @@ onMounted(() => {
             'px-6 py-3 font-medium text-sm border-b-2 transition-colors',
             activeTab === 'products'
               ? 'border-blue-500 text-blue-600'
-              : 'border-transparent text-gray-600 hover:text-gray-900'
+              : 'border-transparent text-gray-600 hover:text-gray-900',
           ]"
         >
           Produits ({{ healthStore.productCount }})
@@ -126,7 +131,7 @@ onMounted(() => {
             'px-6 py-3 font-medium text-sm border-b-2 transition-colors',
             activeTab === 'prescriptions'
               ? 'border-blue-500 text-blue-600'
-              : 'border-transparent text-gray-600 hover:text-gray-900'
+              : 'border-transparent text-gray-600 hover:text-gray-900',
           ]"
         >
           Prescriptions ({{ healthStore.prescriptionCount }})
@@ -160,12 +165,17 @@ onMounted(() => {
 
       <!-- Chargement -->
       <div v-if="healthStore.loading" class="text-center py-12">
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <div
+          class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"
+        ></div>
         <p class="mt-2 text-gray-600">Chargement des produits...</p>
       </div>
 
       <!-- Liste produits -->
-      <div v-else-if="healthStore.products.length === 0" class="bg-white rounded-lg shadow p-12 text-center">
+      <div
+        v-else-if="healthStore.products.length === 0"
+        class="bg-white rounded-lg shadow p-12 text-center"
+      >
         <p class="text-gray-500">Aucun produit trouvé</p>
       </div>
 
@@ -181,19 +191,34 @@ onMounted(() => {
 
       <!-- Modal formulaire produit -->
       <transition name="modal">
-        <div v-if="showProductForm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div class="bg-white rounded-lg max-w-2xl w-full max-h-96 overflow-y-auto">
-            <div class="sticky top-0 bg-white border-b p-4 flex justify-between items-center">
-              <h2 class="text-xl font-bold">{{ editingProduct ? 'Éditer le produit' : 'Ajouter un produit' }}</h2>
-              <button @click="closeProductForm" class="text-gray-500 hover:text-gray-700">✕</button>
+        <div
+          v-if="showProductForm"
+          class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+        >
+          <div
+            class="bg-white rounded-lg max-w-2xl w-full max-h-96 overflow-y-auto"
+          >
+            <div
+              class="sticky top-0 bg-white border-b p-4 flex justify-between items-center"
+            >
+              <h2 class="text-xl font-bold">
+                {{
+                  editingProduct ? "Éditer le produit" : "Ajouter un produit"
+                }}
+              </h2>
+              <button
+                @click="closeProductForm"
+                class="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
             </div>
-            <div class="p-6">
-              <HealthProductForm
-                :product="editingProduct"
-                @cancel="closeProductForm"
-                @success="handleProductFormSuccess"
-              />
-            </div>
+            <HealthProductForm
+              v-if="showProductForm"
+              :product="editingProduct"
+              @success="handleProductFormSuccess"
+              @cancel="closeProductForm"
+            />
           </div>
         </div>
       </transition>
@@ -226,12 +251,17 @@ onMounted(() => {
 
       <!-- Chargement -->
       <div v-if="healthStore.loading" class="text-center py-12">
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <div
+          class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"
+        ></div>
         <p class="mt-2 text-gray-600">Chargement des prescriptions...</p>
       </div>
 
       <!-- Liste prescriptions -->
-      <div v-else-if="filteredPrescriptions.length === 0" class="bg-white rounded-lg shadow p-12 text-center">
+      <div
+        v-else-if="filteredPrescriptions.length === 0"
+        class="bg-white rounded-lg shadow p-12 text-center"
+      >
         <p class="text-gray-500">Aucune prescription trouvée</p>
       </div>
 
@@ -247,11 +277,29 @@ onMounted(() => {
 
       <!-- Modal formulaire prescription -->
       <transition name="modal">
-        <div v-if="showPrescriptionForm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div class="bg-white rounded-lg max-w-2xl w-full max-h-96 overflow-y-auto">
-            <div class="sticky top-0 bg-white border-b p-4 flex justify-between items-center">
-              <h2 class="text-xl font-bold">{{ editingPrescription ? 'Éditer la prescription' : 'Ajouter une prescription' }}</h2>
-              <button @click="closePrescriptionForm" class="text-gray-500 hover:text-gray-700">✕</button>
+        <div
+          v-if="showPrescriptionForm"
+          class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+        >
+          <div
+            class="bg-white rounded-lg max-w-2xl w-full max-h-96 overflow-y-auto"
+          >
+            <div
+              class="sticky top-0 bg-white border-b p-4 flex justify-between items-center"
+            >
+              <h2 class="text-xl font-bold">
+                {{
+                  editingPrescription
+                    ? "Éditer la prescription"
+                    : "Ajouter une prescription"
+                }}
+              </h2>
+              <button
+                @click="closePrescriptionForm"
+                class="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
             </div>
             <div class="p-6">
               <PrescriptionForm
@@ -265,14 +313,23 @@ onMounted(() => {
       </transition>
     </div>
 
+    <!-- Message d'erreur global -->
+    <div
+      v-if="healthStore.error"
+      class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600"
+    >
+      {{ healthStore.error }}
+    </div>
   </div>
 </template>
 
 <style scoped>
-.modal-enter-active, .modal-leave-active {
+.modal-enter-active,
+.modal-leave-active {
   transition: opacity 0.3s ease;
 }
-.modal-enter-from, .modal-leave-to {
+.modal-enter-from,
+.modal-leave-to {
   opacity: 0;
 }
 </style>

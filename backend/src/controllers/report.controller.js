@@ -36,7 +36,8 @@ class ReportController {
     async getTransactions(req, res, next) {
         try {
             const { page = 1, limit = 50, ...filters } = req.query;
-            const result = await reportService.getTransactions(filters, parseInt(page), parseInt(limit));
+            // Passer le role utilisateur pour permettre au comptable de voir les transactions de l'admin
+            const result = await reportService.getTransactions(filters, parseInt(page), parseInt(limit), req.user);
             res.json({
                 success: true,
                 data: result
@@ -50,7 +51,7 @@ class ReportController {
     async getTransactionById(req, res, next) {
         try {
             // Cette méthode n'existe pas encore dans le service, on utilise getTransactions avec un filtre
-            const result = await reportService.getTransactions({ _id: req.params.id }, 1, 1);
+            const result = await reportService.getTransactions({ _id: req.params.id }, 1, 1, req.user);
             if (result.docs.length === 0) {
                 return res.status(404).json({
                     success: false,

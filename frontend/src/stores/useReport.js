@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import * as reportService from '../services/report.service'
+import { exportTransactionsReport } from '../services/comptable.service'
 
 export const useReport = defineStore('report', () => {
   // STATE
@@ -175,7 +176,7 @@ export const useReport = defineStore('report', () => {
   const exportTransactions = async (format = 'csv') => {
     error.value = null
     try {
-      const response = await reportService.exportTransactions(format, currentFilters.value)
+      const response = await exportTransactionsReport(format, currentFilters.value)
       // Déclencher le téléchargement
       const url = window.URL.createObjectURL(new Blob([response]))
       const link = document.createElement('a')

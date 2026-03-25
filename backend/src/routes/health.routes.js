@@ -36,6 +36,11 @@ router.patch('/products/:id/deactivate',
     healthController.deactivateHealthProduct
 );
 
+router.delete('/products/:id',
+    requireRole(['veterinaire', 'admin']),
+    healthController.deleteHealthProduct
+);
+
 // === ROUTES POUR LES PRESCRIPTIONS ===
 // Créer une prescription (vétérinaires uniquement)
 router.post('/prescriptions',

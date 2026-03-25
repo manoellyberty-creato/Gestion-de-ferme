@@ -58,23 +58,28 @@ export const useHealth = defineStore('health', () => {
     }
   }
 
-  const updateProduct = async (id, payload) => {
-    loading.value = true
-    error.value = null
-    try {
-      const response = await healthService.updateProduct(id, payload)
-      const index = products.value.findIndex(p => p._id === id)
-      if (index !== -1) {
-        products.value[index] = response.data
-      }
-      return response.data
-    } catch (err) {
-      error.value = err.response?.data?.message || 'Erreur lors de la mise à jour'
-      throw err
-    } finally {
-      loading.value = false
+
+const updateProduct = async (id, updateData) => {
+  loading.value = true
+  error.value = null
+  try {
+    const response = await healthService.updateProduct(id, updateData)
+    const updatedProduct = response.data?.data || response.data
+    
+    // Mise à jour la liste locale pour déclencher la réactivité Vue
+    const index = products.value.findIndex(p => p._id === id)
+    if (index !== -1) {
+      products.value[index] = { ...products.value[index], ...updatedProduct }
     }
+    
+    return response.data
+  } catch (err) {
+    error.value = err.response?.data?.message || 'Erreur lors de la mise à jour'
+    throw err
+  } finally {
+    loading.value = false
   }
+}
 
   const deleteProduct = async (id) => {
     loading.value = true
@@ -165,6 +170,24 @@ export const useHealth = defineStore('health', () => {
     }
   }
 
+  const updatePrescriptionStatus = async (id, status) => {
+    loading.value = true
+    error.value = null
+    try {
+      const response = await healthService.updatePrescriptionStatus(id, status)
+      const index = prescriptions.value.findIndex(p => p._id === id)
+      if (index !== -1) {
+        prescriptions.value[index] = response.data
+      }
+      return response.data
+    } catch (err) {
+      error.value = err.response?.data?.message || 'Erreur lors de la mise à jour du statut'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   const addAdministration = async (prescriptionId, payload) => {
     error.value = null
     try {
@@ -247,6 +270,7 @@ export const useHealth = defineStore('health', () => {
     createPrescription,
     updatePrescription,
     deletePrescription,
+    updatePrescriptionStatus,
     addAdministration,
     fetchAnimalPrescriptions,
     fetchCampaignPrescriptions,

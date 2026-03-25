@@ -23,3 +23,11 @@ export function getAnimalHistory(tagNumber) {
 export function getCampaignAnimalStats(campaignId) {
   return api.get(`/animals/campaign/${campaignId}/stats`)
 }
+
+export function updateAnimalWeight(tagNumber, weight) {
+  return api.put(`/animals/scan/${tagNumber}/weight`, { weight })
+}
+
+export function updateAnimalStatus(tagNumber, status, additionalData = {}) {
+  return api.put(`/animals/scan/${tagNumber}/status`, { status, ...additionalData })
+}

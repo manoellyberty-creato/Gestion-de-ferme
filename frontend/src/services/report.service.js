@@ -51,3 +51,11 @@ export function getDashboard(params) {
 export function getKPIs(params) {
   return api.get('/reports/kpis', { params })
 }
+
+export function updateTransaction(id, payload) {
+  return api.put(`/reports/transactions/${id}`, payload)
+}
+
+export function deleteTransaction(id) {
+  return api.delete(`/reports/transactions/${id}`)
+}

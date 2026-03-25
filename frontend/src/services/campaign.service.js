@@ -1,56 +1,56 @@
 import api from './api.js'
 
 export function getCampaigns(params) {
-  return api.get('/campaign', { params })
+  return api.get('/campaigns', { params })
 }
 
 export function getCampaignById(id) {
-  return api.get(`/campaign/${id}`)
+  return api.get(`/campaigns/${id}`)
 }
 
 export function createCampaign(payload, userId) {
-  const path = userId ? `/campaign/create/${userId}` : '/campaign/create'
+  const path = userId ? `/campaigns/create/${userId}` : '/campaigns/create'
   return api.post(path, payload)
 }
 
 export function getCampaignsByManager(managerId) {
-  return api.get(`/campaign/manager/${managerId}`)
+  return api.get(`/campaigns/manager/${managerId}`)
 }
 
 export function getCampaignsByCategory(categoryId) {
-  return api.get(`/campaign/category/${categoryId}`)
+  return api.get(`/campaigns/category/${categoryId}`)
 }
 
 export function getCampaignsByDepartment(department) {
-  return api.get(`/campaign/department/${department}`)
+  return api.get(`/campaigns/department/${department}`)
 }
 
 // ===> Mise à jour et Suppression
 export function updateCampaign(id, payload) {
-  return api.patch(`/campaign/update/${id}`, payload)
+  return api.patch(`/campaigns/update/${id}`, payload)
 }
 
 export function deleteCampaign(id) {
-  return api.delete(`/campaign/delete/${id}`)
+  return api.delete(`/campaigns/delete/${id}`)
 }
 
 // ===> Assignations
 export function assignManager(campaignId, userId) {
-  return api.put(`/campaign/assignManager/${campaignId}/${userId}`)
+  return api.put(`/campaigns/assignManager/${campaignId}/${userId}`)
 }
 
 export function assignAgent(campaignId, userId) {
-  return api.put(`/campaign/assignAgent/${campaignId}/${userId}`)
+  return api.put(`/campaigns/assignAgent/${campaignId}/${userId}`)
 }
 
 export function assignVeterinarian(campaignId, userId) {
-  return api.put(`/campaign/assignVeterinarian/${campaignId}/${userId}`)
+  return api.put(`/campaigns/assignVeterinarian/${campaignId}/${userId}`)
 }
 
 export function assignComptable(campaignId, userId) {
-  return api.put(`/campaign/assignComptable/${campaignId}/${userId}`)
+  return api.put(`/campaigns/assignComptable/${campaignId}/${userId}`)
 }
 
 export function unassignMember(campaignId, userId) {
-  return api.delete(`/campaign/unassign/${campaignId}/${userId}`)
+  return api.delete(`/campaigns/unassign/${campaignId}/${userId}`)
 }

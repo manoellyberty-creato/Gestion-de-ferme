@@ -273,6 +273,8 @@
 <script setup>
 import { ref, defineProps, defineEmits, watch } from 'vue'
 import { useHealth } from '../../stores/useHealth'
+import { useAnimals } from '../../stores/useAnimals'
+import { useCampaigns } from '../../stores/useCampaigns'
 
 const props = defineProps({
   prescription: {
@@ -284,6 +286,8 @@ const props = defineProps({
 const emit = defineEmits(['cancel', 'success'])
 
 const healthStore = useHealth()
+const animalStore = useAnimals()
+const campaignStore = useCampaigns()
 
 const isLoading = ref(false)
 const error = ref(null)
@@ -326,7 +330,12 @@ const formData = ref({
 const loadData = async () => {
   try {
     await healthStore.fetchProducts()
+    await animalStore.fetchAnimals()
+    await campaignStore.fetchCampaigns()
+
     availableProducts.value = healthStore.products
+    availableAnimals.value = animalStore.animals
+    availableCampaigns.value = campaignStore.campaigns
   } catch (err) {
     console.error('Erreur lors du chargement des données:', err)
   }
@@ -438,9 +447,4 @@ const handleSubmit = async () => {
 }
 
 loadData()
-
-// Charger les animaux et campagnes si disponibles
-watch(() => healthStore.products, () => {
-  // S'il y a un store pour les animaux/campagnes, charger les données ici
-}, { deep: true })
 </script>

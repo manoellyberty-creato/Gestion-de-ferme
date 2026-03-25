@@ -21,11 +21,11 @@ export function deleteFeed(id) {
 }
 
 export function updateStock(id, quantity) {
-  return api.put(`/feed/${id}/stock`, { quantity })
+  return api.patch(`/feed/${id}/stock`, { stock: quantity })
 }
 
 export function deactivateFeed(id) {
-  return api.put(`/feed/${id}/deactivate`, {})
+  return api.patch(`/feed/${id}/deactivate`, {})
 }
 
 export function getLowStockAlerts() {

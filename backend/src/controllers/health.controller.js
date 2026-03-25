@@ -73,6 +73,20 @@ class HealthController {
         }
     }
 
+    // Supprimer un produit de santé
+    async deleteHealthProduct(req, res, next) {
+        try {
+            const product = await healthService.deleteHealthProduct(req.params.id);
+            res.json({
+                success: true,
+                message: 'Produit de santé supprimé avec succès',
+                data: product
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     // === GESTION DES PRESCRIPTIONS ===
 
     // Créer une prescription

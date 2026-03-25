@@ -50,7 +50,7 @@ const healthSchema = new mongoose.Schema({
         default: [],
     },
     // Coût par unité
-    costPerUnit: {
+    unitPrice: {
         type: Number,
         required: true,
         min: 0,
