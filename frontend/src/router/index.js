@@ -20,6 +20,8 @@ import Reports from '../views/Reports.vue'
 import Finance from '../views/Finance.vue'
 import NavBar from '../layouts/NavBar.vue'
 import AsideBar from '../layouts/AsideBar.vue'
+import AnimalView from '../views/AnimalView.vue'
+import AllAnimal from '@/components/AllAnimal.vue'
 
 const routes = [
   // --- Dashboards par Rôle ---
@@ -81,7 +83,7 @@ const routes = [
   // --- Département / Animal Management ---
   { 
     path: '/departement', 
-    name: 'departement', 
+    name: 'Departements', 
     component: Departement, 
     meta: { requiresAuth: true } 
   },
@@ -115,6 +117,15 @@ const routes = [
     path: '/campaigns/:id/animals', 
     name: 'CampaignAnimals', 
     component: () => import('@/components/AnimalList.vue'), 
+    path: '/animals', 
+    name: 'Animals', 
+    component: AnimalView, 
+    meta: { requiresAuth: true } 
+  },
+  { 
+    path: '/allanimals', 
+    name: 'allAnimals', 
+    component: AllAnimal, 
     meta: { requiresAuth: true } 
   },
 

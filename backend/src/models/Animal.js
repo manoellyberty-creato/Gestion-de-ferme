@@ -1,5 +1,4 @@
-import mongoose from "mongoose";
-import { ANIMAL_STATUS } from "../utils/constants.js";
+import mongoose from 'mongoose';
 
 const animalSchema = new mongoose.Schema(
   {
@@ -82,10 +81,4 @@ const animalSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Index
-// animalSchema.index({ campaignId: 1 });
-// animalSchema.index({ qrCode: 1 }, { unique: true });
-// animalSchema.index({ status: 1 });
-// animalSchema.index({ campaignId: 1, status: 1 });
-
-export default mongoose.model("Animal", animalSchema);
+export default mongoose.model('Animal', animalSchema);
