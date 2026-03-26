@@ -8,20 +8,12 @@ const store = useCampaignStore()
 
 const form = reactive({
   name: '',
-  categoryId: '',
   department: '',
   startDate: '',
   expectedEndDate: '',
   goal: '',
   budget: '',
   notes: '',
-  numberOfSpecies: 1,
-  speciesCategories: [
-    {
-      name: '',
-      animalCount: ''
-    }
-  ],
   goalMetrics: {
     targetWeight: '',
     targetAge: '',
@@ -36,30 +28,6 @@ const isSubmitting = ref(false)
 const feedback = ref('')
 const goals = ['production', 'reproduction', 'transformation', 'maintenance']
 const loadingData = ref(true)
-
-const syncSpeciesCategories = (count) => {
-  const clamped = Math.max(1, Number(count) || 1)
-  form.numberOfSpecies = clamped
-
-  while (form.speciesCategories.length < clamped) {
-    form.speciesCategories.push({ name: '', animalCount: '' })
-  }
-
-  while (form.speciesCategories.length > clamped) {
-    form.speciesCategories.pop()
-  }
-}
-
-const addSpeciesCategory = () => {
-  form.speciesCategories.push({ name: '', animalCount: '' })
-  form.numberOfSpecies = form.speciesCategories.length
-}
-
-const removeSpeciesCategory = (index) => {
-  if (form.speciesCategories.length <= 1) return
-  form.speciesCategories.splice(index, 1)
-  form.numberOfSpecies = form.speciesCategories.length
-}
 
 const clearErrors = () => {
   Object.keys(errors).forEach(key => delete errors[key])
@@ -80,8 +48,7 @@ const validate = () => {
   clearErrors()
 
   if (!form.name.trim()) errors.name = 'Le nom est requis.'
-  if (!form.categoryId.trim()) errors.categoryId = 'L’id de la catégorie est requis.'
-  if (!form.department.trim()) errors.department = 'L’id du département est requis.'
+  if (!form.department.trim()) errors.department = 'Le département est requis.'
   if (!form.startDate) errors.startDate = 'Date de début requise.'
   if (!form.expectedEndDate) errors.expectedEndDate = 'Date de fin attendue requise.'
   if (form.startDate && form.expectedEndDate && form.startDate >= form.expectedEndDate) {
@@ -89,19 +56,6 @@ const validate = () => {
   }
   if (!form.goal) errors.goal = 'Objectif requis.'
   if (!form.budget || Number(form.budget) <= 0) errors.budget = 'Budget cohérent requis (> 0).'
-
-  if (!Array.isArray(form.speciesCategories) || form.speciesCategories.length === 0) {
-    errors.speciesCategories = 'Au moins une catégorie est requise.'
-  } else {
-    form.speciesCategories.forEach((cat, idx) => {
-      if (!cat.name || !cat.name.trim()) {
-        errors[`speciesCategories.${idx}.name`] = 'Nom requis.'
-      }
-      if (!cat.animalCount || Number(cat.animalCount) <= 0) {
-        errors[`speciesCategories.${idx}.animalCount`] = 'Nombre d\'animaux requis (> 0).'
-      }
-    })
-  }
 
   return Object.keys(errors).length === 0
 }
@@ -119,17 +73,12 @@ const handleSubmit = async () => {
 
     const payload = {
       name: form.name,
-      categoryId: form.categoryId,
       department: form.department,
       startDate: form.startDate,
       expectedEndDate: form.expectedEndDate,
       goal: form.goal,
       budget: Number(form.budget),
       notes: form.notes,
-      speciesCategories: form.speciesCategories.map(sc => ({
-        name: sc.name.trim(),
-        animalCount: Number(sc.animalCount)
-      })),
       goalMetrics: {
         targetWeight: form.goalMetrics.targetWeight ? Number(form.goalMetrics.targetWeight) : undefined,
         targetAge: form.goalMetrics.targetAge ? Number(form.goalMetrics.targetAge) : undefined,
@@ -155,10 +104,7 @@ const handleSubmit = async () => {
 
 onMounted(async () => {
   try {
-    await Promise.all([
-      store.fetchCategories(),
-      store.fetchDepartments()
-    ])
+    await store.fetchDepartments()
   } catch (err) {
     console.error("Erreur chargement données:", err)
   } finally {
@@ -254,7 +200,7 @@ onMounted(async () => {
       </label>
 
       <label class="text-sm text-slate-700">
-        Budget (€)
+        Budget (XOF)
         <input v-model="form.budget" type="number" min="0" step="0.01" class="mt-1 w-full rounded-lg border border-slate-300 p-2" />
         <p v-if="errors.budget" class="text-rose-600 text-xs mt-1">{{ errors.budget }}</p>
       </label>

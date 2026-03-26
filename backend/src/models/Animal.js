@@ -13,10 +13,10 @@ const animalSchema = new mongoose.Schema(
       required: true,
       trim: true
     },
-    species: {
-      type: String,
-      required: true,
-      trim: true
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Category',
+      required: true
     },
     tagNumber: {
       type: String,

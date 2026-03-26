@@ -100,7 +100,7 @@
 
         <!-- Budget -->
         <div>
-          <label class="block text-sm font-bold text-slate-700 mb-2">Budget (€)</label>
+          <label class="block text-sm font-bold text-slate-700 mb-2">Budget (XOF)</label>
           <input
             v-model.number="form.budget"
             type="number"
@@ -202,7 +202,6 @@ const goals = ['production', 'reproduction', 'transformation', 'maintenance']
 
 const form = reactive({
   name: '',
-  categoryId: '',
   department: '',
   startDate: '',
   expectedEndDate: '',
@@ -232,7 +231,6 @@ const validate = () => {
   Object.keys(errors).forEach(key => delete errors[key])
 
   if (!form.name.trim()) errors.name = 'Le nom est requis.'
-  if (!form.categoryId) errors.categoryId = 'La catégorie est requise.'
   if (!form.department) errors.department = 'Le département est requis.'
   if (!form.startDate) errors.startDate = 'Date de début requise.'
   if (!form.expectedEndDate) errors.expectedEndDate = 'Date de fin requise.'
@@ -257,7 +255,6 @@ const handleSubmit = async () => {
   try {
     const res = await store.updateCampaign(route.params.id, {
       name: form.name,
-      categoryId: form.categoryId,
       department: form.department,
       startDate: form.startDate,
       expectedEndDate: form.expectedEndDate,
@@ -290,8 +287,7 @@ const formatDateForInput = (dateStr) => {
 
 onMounted(async () => {
   try {
-    // Charger les catégories et départements
-    await store.fetchCategories()
+    // Charger les départements
     await store.fetchDepartments()
 
     // Charger la campagne actuelle
@@ -300,7 +296,6 @@ onMounted(async () => {
 
     if (campaign) {
       form.name = campaign.name
-      form.categoryId = campaign.categoryId?._id || campaign.categoryId
       form.department = campaign.department?._id || campaign.department
       form.startDate = formatDateForInput(campaign.startDate)
       form.expectedEndDate = formatDateForInput(campaign.expectedEndDate)

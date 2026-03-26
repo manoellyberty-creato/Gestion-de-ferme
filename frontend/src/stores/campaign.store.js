@@ -61,7 +61,6 @@ export const useCampaignStore = defineStore('campaign', {
         const params = new URLSearchParams()
         params.set('page', page)
         if (filters.search) params.set('search', filters.search)
-        if (filters.category) params.set('category', filters.category)
         if (filters.department) params.set('department', filters.department)
 
         const res = await api.get(`${API_BASE}?${params.toString()}`)

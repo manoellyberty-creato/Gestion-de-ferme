@@ -2,7 +2,7 @@
 import { onMounted, ref, watch, computed } from 'vue'
 import { useCampaignStore } from '@/stores/campaign.store.js'
 import CampaignFilterBar from '@/components/CampaignFilterBar.vue'
-import { notifyError, notifySuccess } from '@/utils/notifications'
+import { notifyError, notifySuccess, confirmDelete } from '@/utils/notifications'
 
 const store = useCampaignStore()
 const loading = ref(true)
@@ -10,7 +10,6 @@ const error = ref(null)
 
 // État des filtres synchronisé avec CampaignFilterBar
 const filters = ref({
-  category: '',
   department: '',
   search: ''
 })
@@ -40,10 +39,7 @@ const campaignsWithRoles = computed(() => {
 
 // Get category name safely
 const getCategoryName = (campaign) => {
-  if (!campaign) return 'N/A'
-  if (campaign.categoryId?.name) return campaign.categoryId.name
-  if (typeof campaign.categoryId === 'string') return campaign.categoryId
-  return 'Sans catégorie'
+  return 'Général'
 }
 
 // Get department name safely
@@ -82,10 +78,7 @@ const loadData = async () => {
 // Initial data load
 onMounted(async () => {
   try {
-    await Promise.all([
-      store.fetchCategories(),
-      store.fetchDepartments()
-    ])
+    await store.fetchDepartments()
     await loadData()
   } catch (err) {
     error.value = 'Erreur lors de l\'initialisation'
@@ -106,7 +99,8 @@ watch(filters, watchFilters, { deep: true })
 
 // Handle campaign deletion
 const deleteCampaign = async (id) => {
-  if (!confirm('Êtes-vous sûr de vouloir supprimer cette campagne ?')) return
+  const confirmed = await confirmDelete('Êtes-vous sûr de vouloir supprimer cette campagne ?')
+  if (!confirmed) return
   try {
     await store.deleteCampaign(id)
     notifySuccess('Campagne supprimée avec succès')

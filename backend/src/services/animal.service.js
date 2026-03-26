@@ -15,8 +15,8 @@ class AnimalService {
             if (filters.campaignId) {
                 query.campaign = filters.campaignId;
             }
-            if (filters.species) {
-                query.species = filters.species;
+            if (filters.category) {
+                query.category = filters.category;
             }
             if (filters.status) {
                 query.status = filters.status;
@@ -27,6 +27,7 @@ class AnimalService {
 
             const animals = await Animal.find(query)
                 .populate('campaign', 'name type startDate endDate')
+                .populate('category', 'name')
                 .sort({ createdAt: -1 });
 
             return animals;
@@ -42,7 +43,8 @@ class AnimalService {
     async getAnimalById(id) {
         try {
             const animal = await Animal.findById(id)
-                .populate('campaign', 'name type startDate endDate status');
+                .populate('campaign', 'name type startDate endDate status')
+                .populate('category', 'name');
 
             if (!animal) {
                 throw new Error('Animal not found');
@@ -61,7 +63,8 @@ class AnimalService {
     async getAnimalByTagNumber(tagNumber) {
         try {
             const animal = await Animal.findOne({ tagNumber })
-                .populate('campaign', 'name type startDate endDate status');
+                .populate('campaign', 'name type startDate endDate status')
+                .populate('category', 'name');
 
             if (!animal) {
                 throw new Error('Animal not found');
@@ -95,7 +98,7 @@ class AnimalService {
             const qrCodeData = {
                 id: '', // Sera défini après la création
                 tagNumber: animalData.tagNumber,
-                species: animalData.species,
+                category: animalData.category,
                 name: animalData.name,
                 campaign: animalData.campaign
             };
@@ -110,7 +113,7 @@ class AnimalService {
             const finalQrCodeData = {
                 id: animal._id.toString(),
                 tagNumber: animal.tagNumber,
-                species: animal.species,
+                category: animal.category,
                 name: animal.name,
                 campaign: animal.campaign.toString()
             };
@@ -149,7 +152,8 @@ class AnimalService {
                 id,
                 { ...updateData, updatedAt: new Date() },
                 { new: true }
-            ).populate('campaign', 'name type startDate endDate status');
+            ).populate('campaign', 'name type startDate endDate status')
+             .populate('category', 'name');
 
             return updatedAnimal;
         } catch (error) {
@@ -188,7 +192,8 @@ class AnimalService {
                     updatedAt: new Date()
                 },
                 { new: true }
-            ).populate('campaign', 'name type');
+            ).populate('campaign', 'name type')
+             .populate('category', 'name');
 
             if (!animal) {
                 throw new Error('Animal not found');
@@ -273,17 +278,25 @@ class AnimalService {
             const stats = await Animal.aggregate([
                 { $match: { campaign: campaignId } },
                 {
+                    $lookup: {
+                        from: 'categories',
+                        localField: 'category',
+                        foreignField: '_id',
+                        as: 'categoryData'
+                    }
+                },
+                {
                     $group: {
                         _id: null,
                         total: { $sum: 1 },
-                        bySpecies: {
+                        byCategory: {
                             $push: {
-                                species: '$species',
+                                category: { $arrayElemAt: ['$categoryData.name', 0] },
                                 status: '$status',
                                 healthStatus: '$healthStatus'
                             }
                         },
-                        averageWeight: { $avg: '$weight' },
+                        averageWeight: { $avg: '$currentWeight' },
                         totalPurchasePrice: { $sum: '$purchasePrice' },
                         totalSalePrice: { $sum: '$salePrice' }
                     }
@@ -293,7 +306,7 @@ class AnimalService {
             if (stats.length === 0) {
                 return {
                     total: 0,
-                    bySpecies: [],
+                    byCategory: [],
                     averageWeight: 0,
                     totalPurchasePrice: 0,
                     totalSalePrice: 0

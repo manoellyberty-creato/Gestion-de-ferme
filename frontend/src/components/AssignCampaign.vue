@@ -1,11 +1,11 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { userService } from "@/services/user.service";
+import { notifyError } from '@/utils/notifications.js'
 
 const props = defineProps({
   role: String,
 });
-
 const emit = defineEmits(["close", "confirm"]);
 const selectedUserId = ref("");
 const isSubmitting = ref(false);
@@ -19,7 +19,7 @@ const confirmAssign = async () => {
     // Émettre le userId confirmé au parent (CampaignDetail)
     emit("confirm", selectedUserId.value);
   } catch (err) {
-    alert("Erreur: " + err.message);
+    notifyError("Erreur: " + err.message);
   } finally {
     isSubmitting.value = false;
   }

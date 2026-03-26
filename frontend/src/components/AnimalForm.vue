@@ -26,13 +26,13 @@
           </div>
         </div>
 
-        <!-- Species Selection -->
+        <!-- Category Selection -->
         <div class="space-y-3">
-          <label class="block text-sm font-semibold text-slate-700">Espèce *</label>
-          <select v-model="selectedSpecies" required
+          <label class="block text-sm font-semibold text-slate-700">Catégorie *</label>
+          <select v-model="selectedCategory" required
             class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            <option value="">Sélectionner une espèce</option>
-            <option v-for="category in campaignSpeciesCategories" :key="category.name" :value="category.name">
+            <option value="">Sélectionner une catégorie</option>
+            <option v-for="category in categories" :key="category._id" :value="category._id">
               {{ category.name }}
             </option>
           </select>
@@ -122,8 +122,9 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useAnimalStore } from '@/stores/animal.store'
+import { getAllCategories } from '@/services/category.service'
 
 const props = defineProps({
   campaignId: {
@@ -141,7 +142,8 @@ const emit = defineEmits(['close', 'animal-added'])
 const animalStore = useAnimalStore()
 
 const addMode = ref('individual')
-const selectedSpecies = ref('')
+const selectedCategory = ref('')
+const categories = ref([])
 const loading = ref(false)
 const message = ref('')
 const messageType = ref('')
@@ -160,19 +162,27 @@ const bulkForm = ref({
   weightVariation: 0
 })
 
-const campaignSpeciesCategories = computed(() => {
-  return props.campaign?.speciesCategories || []
+// Load categories from database when component mounts
+onMounted(async () => {
+  try {
+    const res = await getAllCategories()
+    categories.value = res.data?.data || res.data || []
+  } catch (error) {
+    console.error('Erreur lors du chargement des catégories:', error)
+    message.value = 'Erreur lors du chargement des catégories'
+    messageType.value = 'error'
+  }
 })
 
 const isIndividualFormValid = computed(() => {
-  return selectedSpecies.value &&
+  return selectedCategory.value &&
          individualForm.value.tagNumber &&
          individualForm.value.initialWeight > 0 &&
          individualForm.value.dateOfBirth
 })
 
 const isBulkFormValid = computed(() => {
-  return selectedSpecies.value &&
+  return selectedCategory.value &&
          bulkForm.value.count > 0 &&
          bulkForm.value.averageWeight > 0
 })
@@ -186,7 +196,7 @@ const addIndividualAnimal = async () => {
   try {
     const animalData = {
       campaign: props.campaignId,
-      species: selectedSpecies.value,
+      category: selectedCategory.value,
       name: individualForm.value.name,
       tagNumber: individualForm.value.tagNumber,
       initialWeight: individualForm.value.initialWeight,
@@ -231,6 +241,10 @@ const addBulkAnimals = async () => {
   try {
     const animals = []
     const startNumber = bulkForm.value.tagPrefix ? 1 : 1
+    
+    // Find the selected category to get its name for the default animal name
+    const selectedCategoryObj = categories.value.find(c => c._id === selectedCategory.value)
+    const categoryName = selectedCategoryObj?.name || 'Animal'
 
     for (let i = 0; i < bulkForm.value.count; i++) {
       // Generate weight with variation
@@ -243,8 +257,8 @@ const addBulkAnimals = async () => {
 
       animals.push({
         campaign: props.campaignId,
-        species: selectedSpecies.value,
-        name: `${selectedSpecies.value} ${startNumber + i}`,
+        category: selectedCategory.value,
+        name: `${categoryName} ${startNumber + i}`,
         tagNumber: tagNumber,
         initialWeight: weight,
         currentWeight: weight,
@@ -281,7 +295,7 @@ const addBulkAnimals = async () => {
   }
 }
 
-watch(selectedSpecies, () => {
+watch(selectedCategory, () => {
   message.value = ''
 })
 </script>

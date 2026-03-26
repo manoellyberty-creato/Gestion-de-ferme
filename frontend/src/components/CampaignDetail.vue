@@ -20,7 +20,7 @@
                 <p class="text-sm text-slate-500 flex items-center gap-2">
                     <span class="font-semibold text-slate-700">{{ campaign.department?.name || 'Secteur non défini' }}</span>
                     <span class="text-slate-300">|</span>
-                    <span>{{ campaign.categoryId?.name || 'Général' }}</span>
+                    <span>Général</span>
                 </p>
             </div>
 
@@ -65,18 +65,6 @@
                         </div>
                     </div>
 
-                    <section class="bg-white p-4 border border-slate-200 rounded-xl">
-                        <h4 class="text-sm font-bold text-slate-800 mb-2">Catégories dynamiques</h4>
-                        <ul class="space-y-2">
-                            <li v-for="cat in campaign.speciesCategories || []" :key="cat.name"
-                                class="p-2 bg-slate-50 border border-slate-100 rounded-lg">
-                                <div class="flex justify-between text-sm">
-                                    <span class="font-semibold">{{ cat.name }}</span>
-                                    <span class="text-slate-500">{{ cat.animalCount }} animaux</span>
-                                </div>
-                            </li>
-                        </ul>
-                    </section>
 
                     <section class="bg-white p-4 border border-slate-200 rounded-xl">
                         <h4 class="text-sm font-bold text-slate-800 mb-2">Animaux générés</h4>
@@ -85,8 +73,8 @@
                         </div>
                         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                             <article v-for="animal in campaignAnimals" :key="animal._id" class="p-2 border border-slate-100 rounded-xl bg-slate-50 text-xs">
-                                <p class="font-bold truncate">{{ animal.name || animal.species }}</p>
-                                <p class="text-slate-500">{{ animal.species }}</p>
+                                <p class="font-bold truncate">{{ animal.name }}</p>
+                                <p class="text-slate-500">{{ animal.category?.name }}</p>
                                 <p class="text-[10px] text-slate-400">Tag: {{ animal.tagNumber }}</p>
                                 <img v-if="animal.qrCode" :src="animal.qrCode" alt="QR Code" class="w-full h-24 object-contain mt-2 rounded-md" />
                             </article>
@@ -197,6 +185,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCampaignStore } from '@/stores/campaign.store.js'
+import { notifyError, notifySuccess, confirmDelete } from '@/utils/notifications.js'
 
 import CampaignTeamManager from '@/components/CampaignTeamManager.vue'
 import AssignCampaign from '@/components/AssignCampaign.vue'
@@ -268,19 +257,26 @@ const handleConfirmAssign = async (userId) => {
         })
         if (res.success) {
             isAssignModalOpen.value = false
+            notifySuccess('Assignation réussie.')
         } else {
-            alert(res.error || "Échec de l'assignation")
+            notifyError(res.error || "Échec de l'assignation")
         }
     } catch (err) {
         console.error("Erreur lors de l'assignation:", err)
-        alert("Erreur lors de l'assignation: " + err.message)
+        notifyError("Erreur lors de l'assignation: " + err.message)
     }
 }
 
 const removeAssignedAgent = async (member) => {
-    if (!confirm(`Retirer ${member.userId?.name} de ce projet ?`)) return
+    const confirmed = await confirmDelete(`Retirer ${member.userId?.name} de ce projet ?`)
+    if (!confirmed) return
+
     const res = await store.unassignMember(campaign.value._id, member.userId._id)
-    if (!res.success) alert(res.error)
+    if (!res.success) {
+        notifyError(res.error || "Erreur lors de la désassignation")
+    } else {
+        notifySuccess("Membre désassigné avec succès")
+    }
 }
 
 const handleStatusChange = async () => {
@@ -297,11 +293,16 @@ const handleStatusChange = async () => {
     const nextStatus = statusCycle[campaign.value.status] || 'preparation'
     const nextLabel = statusLabels[nextStatus] || 'Préparation'
     
-    if (!confirm(`Passer la campagne en "${nextLabel}" ?`)) return
+    const confirmed = await confirmDelete(`Passer la campagne en "${nextLabel}" ?`)
+    if (!confirmed) return
 
     isUpdating.value = true
     const res = await store.updateCampaign(campaign.value._id, { status: nextStatus })
-    if (!res.success) alert(res.error || "Erreur lors du changement de statut")
+    if (!res.success) {
+        notifyError(res.error || "Erreur lors du changement de statut")
+    } else {
+        notifySuccess(`Statut changé en ${nextLabel}`)
+    }
     isUpdating.value = false
 }
 

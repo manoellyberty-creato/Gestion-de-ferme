@@ -128,7 +128,7 @@ class AnimalController {
             const qrCodeData = {
                 tagNumber: animal.tagNumber,
                 name: animal.name,
-                species: animal.species,
+                category: animal.category.name,
                 campaign: animal.campaign.name
             };
 

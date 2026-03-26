@@ -11,27 +11,17 @@ import { CAMPAIGN_STATUS } from "../utils/constants.js";
 export async function createCampaign(data, userId) {
     const {
         name,
-        categoryId,
         department,
         startDate,
         expectedEndDate,
         goal,
         budget,
-        goalMetrics,
-        speciesCategories
+        goalMetrics
     } = data;
 
     //=== Validation des champs
-    if (!name || !categoryId || !startDate || !expectedEndDate ||
-        !goal || budget == null || !department || !Array.isArray(speciesCategories) || speciesCategories.length === 0) {
+    if (!name || !startDate || !expectedEndDate || !goal || budget == null || !department) {
         const error = new Error("Tous les champs requis ne sont pas fournis");
-        error.statusCode = 400;
-        throw error;
-    }
-
-    const hasInvalidCategory = speciesCategories.some(sc => !sc.name || !sc.animalCount || Number(sc.animalCount) < 1);
-    if (hasInvalidCategory) {
-        const error = new Error("Toutes les catégories doivent avoir un nom et un nombre d'animaux >= 1");
         error.statusCode = 400;
         throw error;
     }
@@ -44,10 +34,9 @@ export async function createCampaign(data, userId) {
         throw error;
     }
 
-    // === Création de la campagne
+    // === Création de la campagne (sans catégories)
     const campaign = await Campaign.create({
         name,
-        categoryId,
         department,
         managerId: userId,
         startDate,
@@ -55,65 +44,20 @@ export async function createCampaign(data, userId) {
         goal,
         budget,
         goalMetrics,
-        speciesCategories: speciesCategories.map(sc => ({
-            name: sc.name.trim(),
-            animalCount: Number(sc.animalCount),
-            generatedCount: 0
-        }))
+        notes: data.notes || ''
     });
 
-    // === Génération des animaux par catégorie
-    const animals = [];
-
-    for (const cat of campaign.speciesCategories) {
-        for (let i = 1; i <= cat.animalCount; i++) {
-            const tagNumber = `${cat.name.replace(/\s+/g, '_').toUpperCase()}_${Date.now()}_${i}_${Math.random().toString(36).substring(2, 8)}`;
-            const qrCode = await qrCodeService.generateCustomQRCode({
-                campaignId: campaign._id.toString(),
-                category: cat.name,
-                tagNumber,
-                generatedAt: new Date().toISOString()
-            });
-
-            const animal = {
-                campaign: campaign._id,
-                name: `${cat.name} #${i}`,
-                species: cat.name,
-                tagNumber,
-                qrCode,
-                initialWeight: Math.round((Math.random() * 15 + 5) * 100) / 100,
-                currentWeight: Math.round((Math.random() * 15 + 5) * 100) / 100,
-                dateOfBirth: new Date(),
-                status: 'vivant'
-            };
-            animals.push(animal);
-        }
-        cat.generatedCount = cat.animalCount;
-    }
-
-    if (animals.length > 0) {
-        await Animal.insertMany(animals);
-    }
-
-    // Mettre à jour la campagne après génération des animaux
-    campaign.speciesCategories = campaign.speciesCategories.map(c => ({ ...c, generatedCount: c.animalCount }));
-    await campaign.save();
-
     const populatedCampaign = await Campaign.findById(campaign._id)
-        .populate('categoryId')
         .populate('department')
         .populate('assignedAgents.userId');
 
-    return {
-        ...populatedCampaign.toObject(),
-        animals: await Animal.find({ campaign: campaign._id })
-    };
+    return populatedCampaign;
+
 }
 
 // ===> Récupération d'une campagne par id
 export async function getCampaignbyId(campaignId) {
     const campaign = await Campaign.findById(campaignId)
-        .populate("categoryId")
         .populate("department")
         .populate("assignedAgents.userId");
     if (!campaign) {
@@ -153,7 +97,6 @@ export async function unassignAgentFromCampaign(campaignId, userId) {
 
     // ✅ Retourner la campagne complètement populée pour éviter l'affichage "Inconnu"
     return await Campaign.findById(campaignId)
-        .populate("categoryId")
         .populate("department")
         .populate("assignedAgents.userId");
 }
@@ -161,7 +104,6 @@ export async function unassignAgentFromCampaign(campaignId, userId) {
 // ===> Récupération de toutes les campagnes d'un manager (AVEC PAGINATION & POPULATE)
 export async function getManagerCampaigns(managerId, page = 1, limit = 10) {
     const campaigns = await Campaign.find({ managerId })
-        .populate("categoryId")
         .populate("department")
         .populate("assignedAgents.userId")
         .sort({ createdAt: -1 })
@@ -175,16 +117,7 @@ export async function getManagerCampaigns(managerId, page = 1, limit = 10) {
 export async function getCampaigns(page = 1, limit = 10, categoryId = null, department = null, search = null) {
     const query = {};
 
-    if (categoryId) {
-        if (mongoose.Types.ObjectId.isValid(categoryId)) {
-            query.categoryId = categoryId;
-        } else {
-            const categoryByName = await Category.findOne({ name: categoryId });
-            if (categoryByName) query.categoryId = categoryByName._id;
-            else return [];
-        }
-    }
-
+    // Note: Les campagnes ne sont plus filtrées par catégorie car le champ n'existe plus.
     if (department) {
         if (mongoose.Types.ObjectId.isValid(department)) {
             query.department = department;
@@ -200,7 +133,6 @@ export async function getCampaigns(page = 1, limit = 10, categoryId = null, depa
     }
 
     const campaigns = await Campaign.find(query)
-        .populate("categoryId")
         .populate("department")
         .populate("assignedAgents.userId")
         .sort({ startDate: -1 })
@@ -211,12 +143,11 @@ export async function getCampaigns(page = 1, limit = 10, categoryId = null, depa
 }
 
 // ===> Récupération des campagnes par catégorie (AVEC PAGINATION)
+// (Désactivé : campagnes non liées à une catégorie spécifique)
 export async function getCampaignsByCategory(categoryId, page = 1, limit = 10) {
     try {
-        const validCategoryId = new mongoose.Types.ObjectId(categoryId);
-        const campaigns = await Campaign.find({ categoryId: validCategoryId })
+        const campaigns = await Campaign.find({})
             .populate("department")
-            .populate("categoryId")
             .populate("assignedAgents.userId")
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
@@ -241,7 +172,6 @@ export async function getCampaignsByDepartment(department, page = 1, limit = 10)
         }
 
         const campaigns = await Campaign.find({ department: departmentId })
-            .populate("categoryId")
             .populate("department")
             .populate("assignedAgents.userId")
             .sort({ createdAt: -1 })
@@ -286,15 +216,7 @@ export async function updateCampaign(campaignId, data) {
         }
     }
 
-    // === Vérification de la catégorie
-    if (categoryId) {
-        const category = await Category.findById(categoryId);
-        if (!category) {
-            const error = new Error("La catégorie n'existe pas");
-            error.statusCode = 404;
-            throw error;
-        }
-    }
+    // La campagne n'est plus liée à une catégorie unique.
 
     // === Vérification de dates
     if (startDate && expectedEndDate) {
@@ -318,7 +240,6 @@ export async function updateCampaign(campaignId, data) {
     // === Mise à jour (avec populate)
     const updateData = {
         ...(name && { name }),
-        ...(categoryId && { categoryId }),
         ...(startDate && { startDate }),
         ...(expectedEndDate && { expectedEndDate }),
         ...(budget !== undefined && { budget }),
@@ -413,7 +334,6 @@ export async function assignManagerToCampaign(campaignId, userId) {
     await campaign.save();
     // ✅ Retourner la campaign complètement populée pour la réactivité
     return await Campaign.findById(campaignId)
-        .populate("categoryId")
         .populate("department")
         .populate("assignedAgents.userId");
 }
@@ -518,7 +438,6 @@ export async function assignVeterinarianToCampaign(campaignId, userId) {
     await campaign.save();
     // ✅ Retourner la campaign complètement populée pour la réactivité
     return await Campaign.findById(campaignId)
-        .populate("categoryId")
         .populate("department")
         .populate("assignedAgents.userId");
 }
@@ -572,7 +491,6 @@ export async function assignComptableToCampaign(campaignId, userId) {
     await campaign.save();
     // ✅ Retourner la campaign complètement populée pour la réactivité
     return await Campaign.findById(campaignId)
-        .populate("categoryId")
         .populate("department")
         .populate("assignedAgents.userId");
 }

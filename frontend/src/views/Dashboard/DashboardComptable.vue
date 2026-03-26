@@ -6,6 +6,7 @@ import TransactionApprovalCard from '../../components/comptable/TransactionAppro
 import FinancialMetricCard from '../../components/comptable/FinancialMetricCard.vue'
 import AuditTrailItem from '../../components/comptable/AuditTrailItem.vue'
 import BudgetVarianceCard from '../../components/comptable/BudgetVarianceCard.vue'
+import { notifyWarning } from '@/utils/notifications.js'
 
 const dashboardStore = useComptableDashboard()
 
@@ -61,7 +62,7 @@ const formatCurrency = (amount) => {
 // Methods
 const handleLoadData = async () => {
   if (!selectedCampaignId.value && !hasDateRange.value) {
-    alert('Veuillez sélectionner une campagne ou une plage de dates')
+    notifyWarning('Veuillez sélectionner une campagne ou une plage de dates')
     return
   }
 

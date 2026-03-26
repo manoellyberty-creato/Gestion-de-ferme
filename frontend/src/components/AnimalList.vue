@@ -33,13 +33,13 @@
       <div class="flex flex-wrap gap-4 items-center">
         <div class="flex-1 min-w-[200px]">
           <input v-model="filters.search" @input="debouncedSearch"
-            type="text" placeholder="Rechercher par nom, tag ou espèce..."
+            type="text" placeholder="Rechercher par nom, tag ou catégorie..."
             class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
         </div>
-        <select v-model="filters.species" @change="fetchAnimals"
+        <select v-model="filters.category" @change="fetchAnimals"
           class="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-          <option value="">Toutes les espèces</option>
-          <option v-for="species in availableSpecies" :key="species" :value="species">{{ species }}</option>
+          <option value="">Toutes les catégories</option>
+          <option v-for="category in availableCategories" :key="category._id" :value="category._id">{{ category.name }}</option>
         </select>
         <select v-model="filters.status" @change="fetchAnimals"
           class="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
@@ -83,7 +83,7 @@
         <!-- Animal Info -->
         <div class="text-center space-y-1">
           <h3 class="font-bold text-slate-800 truncate">{{ animal.name || `Animal ${animal.tagNumber}` }}</h3>
-          <p class="text-sm text-slate-600">{{ animal.species }}</p>
+          <p class="text-sm text-slate-600">{{ animal.category?.name }}</p>
           <p class="text-xs text-slate-500">Tag: {{ animal.tagNumber }}</p>
           <div class="flex items-center justify-center gap-2 mt-2">
             <span :class="getStatusClasses(animal.status)" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase">
@@ -153,12 +153,14 @@ const campaign = computed(() => campaignStore.currentCampaign)
 const currentPage = computed(() => animalStore.pagination.page)
 const totalPages = computed(() => Math.ceil(animalStore.pagination.total / animalStore.pagination.limit))
 
-const availableSpecies = computed(() => {
-  const species = new Set()
+const availableCategories = computed(() => {
+  const categories = new Map()
   animalStore.animals.forEach(animal => {
-    if (animal.species) species.add(animal.species)
+    if (animal.category) {
+      categories.set(animal.category._id, animal.category)
+    }
   })
-  return Array.from(species).sort()
+  return Array.from(categories.values()).sort((a, b) => a.name.localeCompare(b.name))
 })
 
 const debouncedSearch = debounce(() => {

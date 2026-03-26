@@ -10,7 +10,8 @@ class QRCodeService {
      */
     async generateAnimalQRCode(animalId) {
         try {
-            const animal = await Animal.findById(animalId);
+            const animal = await Animal.findById(animalId)
+                .populate('category', 'name');
             if (!animal) {
                 throw new Error('Animal not found');
             }
@@ -19,7 +20,7 @@ class QRCodeService {
             const qrData = {
                 id: animal._id.toString(),
                 tagNumber: animal.tagNumber,
-                species: animal.species,
+                category: animal.category.name,
                 name: animal.name,
                 campaign: animal.campaign.toString()
             };
