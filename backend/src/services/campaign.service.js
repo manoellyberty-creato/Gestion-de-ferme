@@ -189,7 +189,6 @@ export async function getCampaignsByDepartment(department, page = 1, limit = 10)
 export async function updateCampaign(campaignId, data) {
     const {
         name,
-        categoryId,
         startDate,
         expectedEndDate,
         budget,
@@ -253,7 +252,7 @@ export async function updateCampaign(campaignId, data) {
         campaignId,
         updateData,
         { new: true, runValidators: true }
-    ).populate('categoryId').populate('department').populate('assignedAgents.userId');
+    ).populate('department').populate('assignedAgents.userId');
 
     if (!campaign) {
         const error = new Error("La campagne n'existe pas");
@@ -386,7 +385,6 @@ export async function assignAgentToCampaign(campaignId, userId) {
     await campaign.save();
     // ✅ Retourner la campaign complètement populée pour la réactivité
     return await Campaign.findById(campaignId)
-        .populate("categoryId")
         .populate("department")
         .populate("assignedAgents.userId");
 }
