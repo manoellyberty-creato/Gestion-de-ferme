@@ -183,14 +183,14 @@ onMounted(async () => {
         <p v-if="errors.name" class="text-rose-600 text-xs mt-1">{{ errors.name }}</p>
       </label>
 
-      <label class="text-sm text-slate-700">
+      <!-- <label class="text-sm text-slate-700">
         Catégorie
         <select v-model="form.categoryId" :disabled="loadingData" class="mt-1 w-full rounded-lg border border-slate-300 p-2 disabled:bg-slate-100">
           <option value="">{{ loadingData ? 'Chargement...' : 'Sélectionner une catégorie' }}</option>
           <option v-for="cat in store.categories" :key="cat._id" :value="cat._id">{{ cat.name }}</option>
         </select>
         <p v-if="errors.categoryId" class="text-rose-600 text-xs mt-1">{{ errors.categoryId }}</p>
-      </label>
+      </label> -->
 
       <label class="text-sm text-slate-700">
         Département
@@ -201,13 +201,13 @@ onMounted(async () => {
         <p v-if="errors.department" class="text-rose-600 text-xs mt-1">{{ errors.department }}</p>
       </label>
 
-      <label class="text-sm text-slate-700">
+      <!-- <label class="text-sm text-slate-700">
         Nombre de catégories souhaitées
         <input v-model.number="form.numberOfSpecies" @change="syncSpeciesCategories(form.numberOfSpecies)" type="number" min="1" class="mt-1 w-full rounded-lg border border-slate-300 p-2" />
         <p v-if="errors.speciesCategories" class="text-rose-600 text-xs mt-1">{{ errors.speciesCategories }}</p>
-      </label>
+      </label> -->
 
-      <div class="grid grid-cols-1 gap-4">
+      <!-- <div class="grid grid-cols-1 gap-4">
         <div v-for="(item, index) in form.speciesCategories" :key="index" class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
           <div class="flex items-center justify-between gap-3 mb-3">
             <h4 class="text-sm font-bold text-slate-800">Catégorie {{ index + 1 }}</h4>
@@ -227,9 +227,9 @@ onMounted(async () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
 
-      <button type="button" @click="addSpeciesCategory" class="w-full px-3 py-2 mt-2 text-sm font-semibold rounded-lg bg-[hsl(14,86%,42%)] text-white hover:bg-[hsl(14,86%,42%,0.85)]">Ajouter une catégorie</button>
+      <!-- <button type="button" @click="addSpeciesCategory" class="w-full px-3 py-2 mt-2 text-sm font-semibold rounded-lg bg-[hsl(14,86%,42%)] text-white hover:bg-[hsl(14,86%,42%,0.85)]">Ajouter une catégorie</button> -->
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <label class="text-sm text-slate-700">

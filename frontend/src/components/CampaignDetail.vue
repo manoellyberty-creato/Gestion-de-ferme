@@ -154,12 +154,12 @@
                         <h4 class="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">Budget Alloué</h4>
                         <span class="bg-white/10 p-2 rounded-lg text-lg">💰</span>
                     </div>
-                    <p class="text-4xl font-black mb-1 tracking-tight">{{ campaign.budget?.toLocaleString() }} <span class="text-xl font-normal opacity-60">€</span></p>
+                    <p class="text-4xl font-black mb-1 tracking-tight">{{ campaign.budget?.toLocaleString() }} <span class="text-xl font-normal opacity-60">XOF</span></p>
                     
                     <div class="mt-6 space-y-3 pt-4 border-t border-white/10">
                         <div class="flex justify-between text-xs font-bold">
                             <span class="text-slate-400 uppercase tracking-tighter">Utilisé</span>
-                            <span class="text-blue-400">{{ campaign.totalCost || 0 }} €</span>
+                            <span class="text-blue-400">{{ campaign.totalCost || 0 }} XOF</span>
                         </div>
                         <div class="w-full bg-white/5 rounded-full h-1.5">
                             <div class="bg-blue-500 h-1.5 rounded-full" :style="{ width: budgetUsagePercent + '%' }"></div>
@@ -167,7 +167,7 @@
                         <div class="flex justify-between text-[10px] font-bold">
                             <span class="text-slate-400 uppercase tracking-tighter">Reste disponible</span>
                             <span :class="remainingBudget < 0 ? 'text-rose-400' : 'text-emerald-400'">
-                                {{ remainingBudget.toLocaleString() }} €
+                                {{ remainingBudget.toLocaleString() }} XOF
                             </span>
                         </div>
                     </div>

@@ -36,7 +36,7 @@
         </div>
 
         <!-- Catégorie -->
-        <div>
+        <!-- <div>
           <label class="block text-sm font-bold text-slate-700 mb-2">Catégorie</label>
           <select
             v-model="form.categoryId"
@@ -52,7 +52,7 @@
           <p v-if="errors.categoryId" class="text-red-500 text-sm mt-1 flex items-center gap-1">
             <span class="text-lg">⚠️</span> {{ errors.categoryId }}
           </p>
-        </div>
+        </div> -->
 
         <!-- Département -->
         <div>
