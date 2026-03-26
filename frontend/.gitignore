@@ -7,6 +7,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+.env
 node_modules
 .DS_Store
 dist
@@ -37,3 +38,8 @@ __screenshots__/
 
 # Vite
 *.timestamp-*-*.mjs
+
+APPLICATION_DETAILLEE.md
+FRONTEND_TASK_BREAKDOWN.md
+POSTMAN_API_TESTING.md
+REPARTITION_TACHES_4_COLLABORATEURS.md
