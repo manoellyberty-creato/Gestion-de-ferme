@@ -1,27 +1,41 @@
 <script setup>
-import { ref } from "vue";
-import { useCampaignStore } from "@/stores/campaign.store";
+import { ref, onMounted } from "vue";
+import { userService } from "@/services/user.service";
+import { notifyError } from '@/utils/notifications.js'
 
 const props = defineProps({
   role: String,
-  users: Array,
 });
-
-const emit = defineEmits(["close"]);
-const store = useCampaignStore();
+const emit = defineEmits(["close", "confirm"]);
 const selectedUserId = ref("");
 const isSubmitting = ref(false);
+const users = ref([]);
+const isLoadingUsers = ref(false);
+
 const confirmAssign = async () => {
   if (!selectedUserId.value) return;
   isSubmitting.value = true;
-  const result = await store.assignMember(props.role, selectedUserId.value);
-  if (result.success) {
-    emit("close");
-  } else {
-    alert(result.error);
+  try {
+    // Émettre le userId confirmé au parent (CampaignDetail)
+    emit("confirm", selectedUserId.value);
+  } catch (err) {
+    notifyError("Erreur: " + err.message);
+  } finally {
+    isSubmitting.value = false;
   }
-  isSubmitting.value = false;
 };
+
+onMounted(async () => {
+  isLoadingUsers.value = true;
+  try {
+    const response = await userService.getAll();
+    users.value = response || [];
+  } catch (err) {
+    console.error("Erreur lors du chargement des utilisateurs", err);
+  } finally {
+    isLoadingUsers.value = false;
+  }
+});
 </script>
 
 <template>
@@ -40,7 +54,11 @@ const confirmAssign = async () => {
         <label class="block text-xs font-bold text-slate-400 uppercase mb-2"
           >Collaborateur</label
         >
+        <div v-if="isLoadingUsers" class="text-center py-6">
+          <p class="text-sm text-slate-500">Chargement des membres...</p>
+        </div>
         <select
+          v-else
           v-model="selectedUserId"
           class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
         >

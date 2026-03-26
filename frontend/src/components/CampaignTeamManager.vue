@@ -1,6 +1,9 @@
 <script setup>
 import { useCampaignStore } from "@/stores/campaign.store";
+import { computed } from "vue";
+
 const store = useCampaignStore();
+const emit = defineEmits(["open-assign", "remove-member"]);
 
 const roles = [
   { id: "manager", label: "Manager" },
@@ -9,10 +12,23 @@ const roles = [
   { id: "comptable", label: "Comptable" },
 ];
 
+// ✅ Utiliser computed pour garantir la réactivité sur chaque accès
+const assignedAgents = computed(() => store.currentCampaign?.assignedAgents || []);
+
 const getMemberName = (roleId) => {
-  const agents = store.currentCampaign?.assignedAgents || [];
-  const member = agents.find((a) => a.role === roleId);
+  const member = assignedAgents.value.find((a) => a.role === roleId);
   return member?.userId?.name || "Non assigné";
+};
+
+const getMember = (roleId) => {
+  return assignedAgents.value.find((a) => a.role === roleId);
+};
+
+const handleRemove = (member) => {
+  if (!member || !member.userId) return;
+  if (confirm(`Retirer ${member.userId.name} de ce projet ?`)) {
+    emit("remove-member", member);
+  }
 };
 </script>
 
@@ -39,12 +55,25 @@ const getMemberName = (roleId) => {
           </p>
         </div>
 
-        <button
-          @click="$emit('open-assign', role.id)"
-          class="text-xs font-semibold px-3 py-1 bg-white border border-slate-200 rounded hover:bg-slate-50 shadow-sm"
-        >
-          Modifier
-        </button>
+        <div class="flex gap-2">
+          <!-- Bouton de suppression si quelqu'un est assigné -->
+          <button
+            v-if="getMember(role.id)"
+            @click="handleRemove(getMember(role.id))"
+            class="text-xs font-semibold px-2 py-1 bg-rose-50 border border-rose-200 text-rose-600 rounded hover:bg-rose-100 transition-colors"
+            title="Désassigner ce membre"
+          >
+            ✕
+          </button>
+
+          <!-- Bouton de modification/assignation -->
+          <button
+            @click="$emit('open-assign', role.id)"
+            class="text-xs font-semibold px-3 py-1 bg-white border border-slate-200 rounded hover:bg-slate-50 shadow-sm"
+          >
+            {{ getMember(role.id) ? "Remplacer" : "Assigner" }}
+          </button>
+        </div>
       </div>
     </div>
   </div>

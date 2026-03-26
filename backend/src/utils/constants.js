@@ -97,10 +97,10 @@ export const TRANSACTION_STATUSES = {
 // === STATUTS DES CAMPAGNES ===
 export const CAMPAIGN_STATUS = {
     PREPARATION: 'preparation',
-    PLANNING: 'planning',
+    // PLANNING: 'planning',
     ACTIVE: 'active',
     COMPLETED: 'completed',
-    CANCELLED: 'cancelled'
+    // CANCELLED: 'cancelled'
 };
 
 // Maintien de compatibilité
@@ -115,10 +115,10 @@ export const DEPARTMENTS = {
 
 // === OBJECTIFS DES CAMPAGNES ===
 export const CAMPAIGN_GOALS = {
-    PRODUCTIVITY: 'productivity',
-    SUSTAINABILITY: 'sustainability',
-    PROFITABILITY: 'profitability',
-    MARKET_EXPANSION: 'market_expansion'
+    PRODUCTION: 'production',
+    REPRODUCTION: 'reproduction',
+    TRANSFORMATION: 'transformation',
+    MAINTENANCE: 'maintenance'
 };
 
 // === UNITÉS DE MESURE ===

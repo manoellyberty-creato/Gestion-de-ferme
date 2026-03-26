@@ -1,18 +1,84 @@
 import mongoose from 'mongoose';
 
-const animalSchema = new mongoose.Schema({
-  nom: { type: String, required: true },
-  espece: { type: String, required: true },
-  race: { type: String },
-  age: { type: Number },
-  statut: { type: String, default: 'En forme' },
-  qrCode: { type: String },
-  // Lien vers le département
-  department: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Department',
-    required: true 
-  }
-}, { timestamps: true });
+const animalSchema = new mongoose.Schema(
+  {
+    campaign: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Campaign',
+      required: true
+    },
+    name: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Category',
+      required: true
+    },
+    tagNumber: {
+      type: String,
+      required: true,
+      unique: true
+    },
+    qrCode: {
+      type: String,
+      required: true
+    },
+    initialWeight: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+    currentWeight: {
+      type: Number,
+      default: null,
+      min: 0
+    },
+    status: {
+      type: String,
+      enum: Object.values(ANIMAL_STATUS),
+      default: ANIMAL_STATUS.VIVANT
+    },
+    dateOfBirth: {
+      type: Date,
+      required: true
+    },
+    entryDate: {
+      type: Date,
+      default: Date.now
+    },
+    exitDate: {
+      type: Date,
+      default: null
+    },
+    exitReason: {
+      type: String,
+      enum: ['mort', 'vendu', 'fin_cycle'],
+      default: null
+    },
+    growthHistory: [{
+      date: {
+        type: Date,
+        default: Date.now,
+        required: true
+      },
+      weight: {
+        type: Number,
+        required: true,
+        min: 0
+      },
+      notes: {
+        type: String,
+        default: ""
+      }
+    }],
+    metadata: {
+      type: mongoose.Schema.Types.Mixed
+    }
+  },
+  { timestamps: true }
+);
 
 export default mongoose.model('Animal', animalSchema);

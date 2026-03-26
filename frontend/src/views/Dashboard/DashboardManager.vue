@@ -177,7 +177,7 @@ onMounted(() => {
             <thead class="bg-gray-100 text-xs uppercase">
               <tr>
                 <th class="px-3 py-2 border">ID</th>
-                <th class="px-3 py-2 border">Espèce</th>
+                <th class="px-3 py-2 border">Catégorie</th>
                 <th class="px-3 py-2 border">Poids</th>
                 <th class="px-3 py-2 border">Statut</th>
               </tr>
@@ -185,8 +185,8 @@ onMounted(() => {
             <tbody class="divide-y">
               <tr v-for="animal in managerStore.animals.slice(0, 10)" :key="animal._id" class="hover:bg-gray-50">
                 <td class="px-3 py-2 border">{{ animal.tagNumber }}</td>
-                <td class="px-3 py-2 border">{{ animal.species }}</td>
-                <td class="px-3 py-2 border">{{ animal.weight }} kg</td>
+                <td class="px-3 py-2 border">{{ animal.category?.name }}</td>
+                <td class="px-3 py-2 border">{{ animal.currentWeight }} kg</td>
                 <td class="px-3 py-2 border">
                   <span :class="['px-2 py-1 rounded-full text-xs font-medium', animal.healthStatus === 'healthy' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800']">
                     {{ animal.healthStatus === 'healthy' ? 'Sain' : 'Malade' }}

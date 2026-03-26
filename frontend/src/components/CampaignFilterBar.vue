@@ -7,7 +7,7 @@ const store = useCampaignStore()
 const props = defineProps({
   modelValue: {
     type: Object,
-    default: () => ({ search: '', category: '', department: '' })
+    default: () => ({ search: '', department: '' })
   }
 })
 
@@ -19,9 +19,6 @@ const updateFilter = (key, value) => {
 
 onMounted(async () => {
   // Charger les données si elles ne sont pas déjà disponibles
-  if (store.categories.length === 0) {
-    await store.fetchCategories()
-  }
   if (store.departments.length === 0) {
     await store.fetchDepartments()
   }
@@ -46,16 +43,6 @@ onMounted(async () => {
       />
     </div>
 
-    <div class="w-full md:w-auto md:flex-1">
-      <select 
-        :value="modelValue.category"
-        @change="updateFilter('category', $event.target.value)"
-        class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-600 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer"
-      >
-        <option value="">Toutes les catégories</option>
-        <option v-for="cat in store.categories" :key="cat._id" :value="cat._id">{{ cat.name }}</option>
-      </select>
-    </div>
 
     <div class="w-full md:w-auto md:flex-1">
       <select 
@@ -69,7 +56,7 @@ onMounted(async () => {
     </div>
 
     <button 
-      @click="emit('update:modelValue', { search: '', category: '', department: '' })"
+      @click="emit('update:modelValue', { search: '', department: '' })"
       class="text-xs font-bold text-slate-400 hover:text-blue-600 uppercase tracking-tight transition-colors px-3 py-1 hover:bg-slate-100 rounded-lg"
     >
       Réinitialiser

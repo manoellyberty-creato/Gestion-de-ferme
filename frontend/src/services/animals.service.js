@@ -1,10 +1,37 @@
-import axios from "axios";
-const API_URL = "http://localhost:7000/api/animals"; // Ajuste selon ton port
+import api from './api'
 
-export const animalService = {
-  getAll: () => axios.get(API_URL).then(res => res.data),
-  getOne: (id) => axios.get(`${API_URL}/${id}`).then(res => res.data),
-  create: (data) => axios.post(API_URL, data).then(res => res.data),
-  update: (id, data) => axios.put(`${API_URL}/${id}`, data).then(res => res.data),
-  delete: (id) => axios.delete(`${API_URL}/${id}`).then(res => res.data),
-};
+export function getAllAnimals(params) {
+  return api.get('/animals', { params })
+}
+
+export function getAnimalById(id) {
+  return api.get(`/animals/${id}`)
+}
+
+export function createAnimal(animalData) {
+  return api.post('/animals', animalData)
+}
+
+export function updateAnimal(id, animalData) {
+  return api.put(`/animals/${id}`, animalData)
+}
+
+export function deleteAnimal(id) {
+  return api.delete(`/animals/${id}`)
+}
+
+export function generateAnimalQRCode(id) {
+  return api.get(`/animals/${id}/qrcode`, { responseType: 'blob' })
+}
+
+export function scanAnimal(tagNumber) {
+  return api.get(`/animals/scan/${tagNumber}`)
+}
+
+export function getAnimalHistory(tagNumber) {
+  return api.get(`/animals/scan/${tagNumber}/history`)
+}
+
+export function getCampaignAnimalStats(campaignId) {
+  return api.get(`/animals/campaign/${campaignId}/stats`)
+}

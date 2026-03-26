@@ -120,7 +120,8 @@ class HealthService {
             if (status) query.status = status;
 
             return await Prescription.find(query)
-                .populate('animal', 'name tagNumber species')
+                .populate('animal', 'name tagNumber')
+                .populate({ path: 'animal', populate: { path: 'category', select: 'name' } })
                 .populate('campaign', 'name startDate endDate')
                 .populate('veterinarian', 'name email')
                 .populate('prescribedProducts.product', 'name type dosage costPerUnit')
@@ -137,7 +138,7 @@ class HealthService {
             if (status) query.status = status;
 
             return await Prescription.find(query)
-                .populate('animal', 'name tagNumber species')
+                .populate('animal', 'name tagNumber', { populate: { path: 'category', select: 'name' } })
                 .populate('veterinarian', 'name email')
                 .populate('prescribedProducts.product', 'name type')
                 .sort({ prescriptionDate: -1 });
@@ -174,7 +175,8 @@ class HealthService {
             if (filters.campaign) query.campaign = filters.campaign;
 
             return await Prescription.find(query)
-                .populate('animal', 'name tagNumber species')
+                .populate('animal', 'name tagNumber')
+                .populate({ path: 'animal', populate: { path: 'category', select: 'name' } })
                 .populate('campaign', 'name startDate endDate')
                 .populate('veterinarian', 'name email')
                 .populate('prescribedProducts.product', 'name type dosage costPerUnit')
@@ -188,7 +190,8 @@ class HealthService {
     async getPrescriptionById(id) {
         try {
             const prescription = await Prescription.findById(id)
-                .populate('animal', 'name tagNumber species')
+                .populate('animal', 'name tagNumber')
+                .populate({ path: 'animal', populate: { path: 'category', select: 'name' } })
                 .populate('campaign', 'name startDate endDate')
                 .populate('veterinarian', 'name email')
                 .populate('prescribedProducts.product', 'name type dosage costPerUnit');

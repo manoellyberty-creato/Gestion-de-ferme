@@ -61,7 +61,7 @@ class ReportService {
                 .populate([
                     { path: 'campaign', select: 'name startDate endDate' },
                     { path: 'recordedBy', select: 'name email' },
-                    { path: 'animal', select: 'name tagNumber species' }
+                    { path: 'animal', select: 'name tagNumber', populate: { path: 'category', select: 'name' } }
                 ]);
 
             return {
@@ -188,11 +188,19 @@ class ReportService {
             const animalStats = await Animal.aggregate([
                 { $match: { campaign: campaignId } },
                 {
+                    $lookup: {
+                        from: 'categories',
+                        localField: 'category',
+                        foreignField: '_id',
+                        as: 'categoryData'
+                    }
+                },
+                {
                     $group: {
-                        _id: '$species',
+                        _id: '$categoryData.name',
                         count: { $sum: 1 },
-                        totalWeight: { $sum: '$weight' },
-                        averageWeight: { $avg: '$weight' }
+                        totalWeight: { $sum: '$currentWeight' },
+                        averageWeight: { $avg: '$currentWeight' }
                     }
                 }
             ]);

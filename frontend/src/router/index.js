@@ -10,6 +10,7 @@ import DashboardComptable from '../views/Dashboard/DashboardComptable.vue'
 import Departement from '../views/Departement.vue'
 import Campagne from '../views/Campagne.vue'
 import CampaignForm from '../components/CampaignForm.vue'
+import CampaignEdit from '../components/CampaignEdit.vue'
 import CampaignDetail from '../components/CampaignDetail.vue'
 import Alert from '../views/Alert.vue'
 import Health from '../views/Health.vue'
@@ -101,12 +102,21 @@ const routes = [
     meta: { requiresAuth: true } 
   },
   { 
+    path: '/campaigns/edit/:id', 
+    name: 'CampaignEdit', 
+    component: CampaignEdit, 
+    meta: { requiresAuth: true } 
+  },
+  { 
     path: '/campaigns/:id', 
     name: 'CampaignDetail', 
     component: CampaignDetail, 
     meta: { requiresAuth: true } 
   },
   { 
+    path: '/campaigns/:id/animals', 
+    name: 'CampaignAnimals', 
+    component: () => import('@/components/AnimalList.vue'), 
     path: '/animals', 
     name: 'Animals', 
     component: AnimalView, 
@@ -143,30 +153,30 @@ const router = createRouter({
 })
 
 // Guards d'authentification et d'autorisation par rôle
-router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('token')
-  const user = JSON.parse(localStorage.getItem('user') || '{}')
+// router.beforeEach((to, from, next) => {
+//   const token = localStorage.getItem('token')
+//   const user = JSON.parse(localStorage.getItem('user') || '{}')
 
-  // 1. Si la page demande une connexion et que l'user n'est pas loggé
-  if (to.meta.requiresAuth && !token) {
-    return next({ name: 'Login' })
-  }
+//   // 1. Si la page demande une connexion et que l'user n'est pas loggé
+//   if (to.meta.requiresAuth && !token) {
+//     return next({ name: 'Login' })
+//   }
 
-  // 2. Si la page demande un rôle précis et que l'user ne l'a pas
-  if (to.meta.role && user.role !== to.meta.role) {
-    // On le redirige vers sa propre page d'accueil selon son rôle réel
-    const homeByRole = {
-      admin: '/admin-dashboard',
-      manager: '/manager-dashboard',
-      veterinaire: '/veto-dashboard',
-      agent: '/agent-dashboard',
-      comptable: '/comptable-dashboard'
-    }
-    return next(homeByRole[user.role] || '/login')
-  }
+//   // 2. Si la page demande un rôle précis et que l'user ne l'a pas
+//   if (to.meta.role && user.role !== to.meta.role) {
+//     // On le redirige vers sa propre page d'accueil selon son rôle réel
+//     const homeByRole = {
+//       admin: '/admin-dashboard',
+//       manager: '/manager-dashboard',
+//       veterinaire: '/veto-dashboard',
+//       agent: '/agent-dashboard',
+//       comptable: '/comptable-dashboard'
+//     }
+//     return next(homeByRole[user.role] || '/login')
+//   }
 
-  // 3. Si tout est OK ou que la page est publique (comme le 404)
-  next()
-})
+//   // 3. Si tout est OK ou que la page est publique (comme le 404)
+//   next()
+// })
 
 export default router

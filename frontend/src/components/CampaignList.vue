@@ -7,7 +7,6 @@ const loading = ref(true)
 
 // État des filtres
 const filters = ref({
-  category: '',
   department: '',
   search: ''
 })
@@ -30,11 +29,7 @@ const getStatusBadge = (status) => {
 
 // Computed pour obtenir le nom de la catégorie
 const getCategoryName = (campaign) => {
-  if (!campaign) return 'N/A'
-  // La catégorie est populée par le backend
-  if (campaign.categoryId?.name) return campaign.categoryId.name
-  if (campaign.categoryId && typeof campaign.categoryId === 'string') return 'Catégorie'
-  return 'Sans catégorie'
+  return 'Général'
 }
 
 // Computed pour obtenir le nom du département
@@ -104,13 +99,6 @@ const formatDate = (date) => {
           <label class="block text-xs font-semibold text-slate-600 mb-2">Recherche</label>
           <input v-model="filters.search" type="text" placeholder="Chercher une campagne..."
             class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-2">Catégorie</label>
-          <select v-model="filters.category" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option value="">Toutes les catégories</option>
-            <option v-for="cat in store.categories" :key="cat._id" :value="cat._id">{{ cat.name }}</option>
-          </select>
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-2">Département</label>

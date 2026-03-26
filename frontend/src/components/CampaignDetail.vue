@@ -13,18 +13,25 @@
                         <span class="mr-1 group-hover:-translate-x-1 transition-transform">←</span> Retour
                     </button>
                     <span :class="statusClasses" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider shadow-sm">
-                        {{ campaign.status }}
+                        {{ statusLabel }}
                     </span>
                 </div>
                 <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">{{ campaign.name }}</h1>
                 <p class="text-sm text-slate-500 flex items-center gap-2">
                     <span class="font-semibold text-slate-700">{{ campaign.department?.name || 'Secteur non défini' }}</span>
                     <span class="text-slate-300">|</span>
-                    <span>{{ campaign.categoryId?.name || 'Général' }}</span>
+                    <span>Général</span>
                 </p>
             </div>
 
             <div class="flex gap-3">
+                <button @click="router.push(`/campaigns/${campaign._id}/animals`)" class="px-5 py-2.5 text-sm font-bold text-blue-700 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 hover:border-blue-300 hover:shadow-md transition-all active:scale-95">
+                    <div class="flex items-center gap-2">
+                        <span>🐄</span>
+                        Gestion des Animaux
+                    </div>
+                </button>
+
                 <button @click="router.push(`/campaigns/edit/${campaign._id}`)"
                     class="px-5 py-2.5 text-sm font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 hover:shadow-md transition-all active:scale-95">
                     Modifier les infos
@@ -58,18 +65,6 @@
                         </div>
                     </div>
 
-                    <section class="bg-white p-4 border border-slate-200 rounded-xl">
-                        <h4 class="text-sm font-bold text-slate-800 mb-2">Catégories dynamiques</h4>
-                        <ul class="space-y-2">
-                            <li v-for="cat in campaign.speciesCategories || []" :key="cat.name"
-                                class="p-2 bg-slate-50 border border-slate-100 rounded-lg">
-                                <div class="flex justify-between text-sm">
-                                    <span class="font-semibold">{{ cat.name }}</span>
-                                    <span class="text-slate-500">{{ cat.animalCount }} animaux</span>
-                                </div>
-                            </li>
-                        </ul>
-                    </section>
 
                     <section class="bg-white p-4 border border-slate-200 rounded-xl">
                         <h4 class="text-sm font-bold text-slate-800 mb-2">Animaux générés</h4>
@@ -78,8 +73,8 @@
                         </div>
                         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                             <article v-for="animal in campaignAnimals" :key="animal._id" class="p-2 border border-slate-100 rounded-xl bg-slate-50 text-xs">
-                                <p class="font-bold truncate">{{ animal.name || animal.species }}</p>
-                                <p class="text-slate-500">{{ animal.species }}</p>
+                                <p class="font-bold truncate">{{ animal.name }}</p>
+                                <p class="text-slate-500">{{ animal.category?.name }}</p>
                                 <p class="text-[10px] text-slate-400">Tag: {{ animal.tagNumber }}</p>
                                 <img v-if="animal.qrCode" :src="animal.qrCode" alt="QR Code" class="w-full h-24 object-contain mt-2 rounded-md" />
                             </article>
@@ -106,7 +101,10 @@
             </div>
 
             <aside class="space-y-6">
-                <CampaignTeamManager @open-assign="openAssignModal" />
+                <CampaignTeamManager 
+            @open-assign="openAssignModal" 
+            @remove-member="removeAssignedAgent"
+        />
 
                 <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
                     <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
@@ -144,12 +142,12 @@
                         <h4 class="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">Budget Alloué</h4>
                         <span class="bg-white/10 p-2 rounded-lg text-lg">💰</span>
                     </div>
-                    <p class="text-4xl font-black mb-1 tracking-tight">{{ campaign.budget?.toLocaleString() }} <span class="text-xl font-normal opacity-60">€</span></p>
+                    <p class="text-4xl font-black mb-1 tracking-tight">{{ campaign.budget?.toLocaleString() }} <span class="text-xl font-normal opacity-60">XOF</span></p>
                     
                     <div class="mt-6 space-y-3 pt-4 border-t border-white/10">
                         <div class="flex justify-between text-xs font-bold">
                             <span class="text-slate-400 uppercase tracking-tighter">Utilisé</span>
-                            <span class="text-blue-400">{{ campaign.totalCost || 0 }} €</span>
+                            <span class="text-blue-400">{{ campaign.totalCost || 0 }} XOF</span>
                         </div>
                         <div class="w-full bg-white/5 rounded-full h-1.5">
                             <div class="bg-blue-500 h-1.5 rounded-full" :style="{ width: budgetUsagePercent + '%' }"></div>
@@ -157,7 +155,7 @@
                         <div class="flex justify-between text-[10px] font-bold">
                             <span class="text-slate-400 uppercase tracking-tighter">Reste disponible</span>
                             <span :class="remainingBudget < 0 ? 'text-rose-400' : 'text-emerald-400'">
-                                {{ remainingBudget.toLocaleString() }} €
+                                {{ remainingBudget.toLocaleString() }} XOF
                             </span>
                         </div>
                     </div>
@@ -187,6 +185,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCampaignStore } from '@/stores/campaign.store.js'
+import { notifyError, notifySuccess, confirmDelete } from '@/utils/notifications.js'
 
 import CampaignTeamManager from '@/components/CampaignTeamManager.vue'
 import AssignCampaign from '@/components/AssignCampaign.vue'
@@ -216,10 +215,22 @@ const remainingBudget = computed(() => {
 
 const statusClasses = computed(() => {
     const s = campaign.value?.status
-    if (s === 'Brouillon') return 'bg-amber-100 text-amber-700 border border-amber-200'
-    if (s === 'En cours') return 'bg-emerald-100 text-emerald-700 border border-emerald-200'
-    if (s === 'Terminée') return 'bg-slate-100 text-slate-700 border border-slate-200'
-    return 'bg-blue-100 text-blue-700 border border-blue-200'
+    const statusLabels = {
+        'preparation': 'bg-amber-100 text-amber-700 border border-amber-200',
+        'active': 'bg-emerald-100 text-emerald-700 border border-emerald-200',
+        'completed': 'bg-slate-100 text-slate-700 border border-slate-200'
+    }
+    return statusLabels[s] || 'bg-blue-100 text-blue-700 border border-blue-200'
+})
+
+const statusLabel = computed(() => {
+    const s = campaign.value?.status
+    const labels = {
+        'preparation': 'Préparation',
+        'active': 'En cours',
+        'completed': 'Terminée'
+    }
+    return labels[s] || s
 })
 
 // MÉTHODES
@@ -238,30 +249,60 @@ const openAssignModal = (role) => {
 }
 
 const handleConfirmAssign = async (userId) => {
-    const res = await store.assignMember({
-        campaignId: campaign.value._id,
-        userId: userId,
-        role: selectedRoleForAssign.value
-    })
-    if (res.success) isAssignModalOpen.value = false
-    else alert(res.error || "Échec de l'assignation")
+    try {
+        const res = await store.assignMember({
+            campaignId: campaign.value._id,
+            userId: userId,
+            role: selectedRoleForAssign.value
+        })
+        if (res.success) {
+            isAssignModalOpen.value = false
+            notifySuccess('Assignation réussie.')
+        } else {
+            notifyError(res.error || "Échec de l'assignation")
+        }
+    } catch (err) {
+        console.error("Erreur lors de l'assignation:", err)
+        notifyError("Erreur lors de l'assignation: " + err.message)
+    }
 }
 
 const removeAssignedAgent = async (member) => {
-    if (!confirm(`Retirer ${member.userId?.name} de ce projet ?`)) return
+    const confirmed = await confirmDelete(`Retirer ${member.userId?.name} de ce projet ?`)
+    if (!confirmed) return
+
     const res = await store.unassignMember(campaign.value._id, member.userId._id)
-    if (!res.success) alert(res.error)
+    if (!res.success) {
+        notifyError(res.error || "Erreur lors de la désassignation")
+    } else {
+        notifySuccess("Membre désassigné avec succès")
+    }
 }
 
 const handleStatusChange = async () => {
-    const statusCycle = { 'Brouillon': 'En cours', 'En cours': 'Terminée', 'Terminée': 'Brouillon' }
-    const nextStatus = statusCycle[campaign.value.status] || 'Brouillon'
+    const statusCycle = {
+        'preparation': 'active',
+        'active': 'completed',
+        'completed': 'preparation'
+    }
+    const statusLabels = {
+        'preparation': 'Préparation',
+        'active': 'En cours',
+        'completed': 'Terminée'
+    }
+    const nextStatus = statusCycle[campaign.value.status] || 'preparation'
+    const nextLabel = statusLabels[nextStatus] || 'Préparation'
     
-    if (!confirm(`Passer la campagne en "${nextStatus}" ?`)) return
+    const confirmed = await confirmDelete(`Passer la campagne en "${nextLabel}" ?`)
+    if (!confirmed) return
 
     isUpdating.value = true
     const res = await store.updateCampaign(campaign.value._id, { status: nextStatus })
-    if (!res.success) alert(res.error)
+    if (!res.success) {
+        notifyError(res.error || "Erreur lors du changement de statut")
+    } else {
+        notifySuccess(`Statut changé en ${nextLabel}`)
+    }
     isUpdating.value = false
 }
 

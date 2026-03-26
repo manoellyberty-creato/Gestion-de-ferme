@@ -8,20 +8,12 @@ const store = useCampaignStore()
 
 const form = reactive({
   name: '',
-  categoryId: '',
   department: '',
   startDate: '',
   expectedEndDate: '',
   goal: '',
   budget: '',
   notes: '',
-  numberOfSpecies: 1,
-  speciesCategories: [
-    {
-      name: '',
-      animalCount: ''
-    }
-  ],
   goalMetrics: {
     targetWeight: '',
     targetAge: '',
@@ -34,44 +26,29 @@ const form = reactive({
 const errors = reactive({})
 const isSubmitting = ref(false)
 const feedback = ref('')
-const goals = ['PRODUCTION', 'REPRODUCTION', 'TRANSFORMATION', 'MAINTENANCE']
+const goals = ['production', 'reproduction', 'transformation', 'maintenance']
 const loadingData = ref(true)
-
-const syncSpeciesCategories = (count) => {
-  const clamped = Math.max(1, Number(count) || 1)
-  form.numberOfSpecies = clamped
-
-  while (form.speciesCategories.length < clamped) {
-    form.speciesCategories.push({ name: '', animalCount: '' })
-  }
-
-  while (form.speciesCategories.length > clamped) {
-    form.speciesCategories.pop()
-  }
-}
-
-const addSpeciesCategory = () => {
-  form.speciesCategories.push({ name: '', animalCount: '' })
-  form.numberOfSpecies = form.speciesCategories.length
-}
-
-const removeSpeciesCategory = (index) => {
-  if (form.speciesCategories.length <= 1) return
-  form.speciesCategories.splice(index, 1)
-  form.numberOfSpecies = form.speciesCategories.length
-}
 
 const clearErrors = () => {
   Object.keys(errors).forEach(key => delete errors[key])
   feedback.value = ''
 }
 
+const formatGoalLabel = (goal) => {
+  const labels = {
+    'production': 'Production',
+    'reproduction': 'Reproduction',
+    'transformation': 'Transformation',
+    'maintenance': 'Maintenance'
+  }
+  return labels[goal] || goal
+}
+
 const validate = () => {
   clearErrors()
 
   if (!form.name.trim()) errors.name = 'Le nom est requis.'
-  if (!form.categoryId.trim()) errors.categoryId = 'L’id de la catégorie est requis.'
-  if (!form.department.trim()) errors.department = 'L’id du département est requis.'
+  if (!form.department.trim()) errors.department = 'Le département est requis.'
   if (!form.startDate) errors.startDate = 'Date de début requise.'
   if (!form.expectedEndDate) errors.expectedEndDate = 'Date de fin attendue requise.'
   if (form.startDate && form.expectedEndDate && form.startDate >= form.expectedEndDate) {
@@ -79,19 +56,6 @@ const validate = () => {
   }
   if (!form.goal) errors.goal = 'Objectif requis.'
   if (!form.budget || Number(form.budget) <= 0) errors.budget = 'Budget cohérent requis (> 0).'
-
-  if (!Array.isArray(form.speciesCategories) || form.speciesCategories.length === 0) {
-    errors.speciesCategories = 'Au moins une catégorie est requise.'
-  } else {
-    form.speciesCategories.forEach((cat, idx) => {
-      if (!cat.name || !cat.name.trim()) {
-        errors[`speciesCategories.${idx}.name`] = 'Nom requis.'
-      }
-      if (!cat.animalCount || Number(cat.animalCount) <= 0) {
-        errors[`speciesCategories.${idx}.animalCount`] = 'Nombre d\'animaux requis (> 0).'
-      }
-    })
-  }
 
   return Object.keys(errors).length === 0
 }
@@ -109,17 +73,12 @@ const handleSubmit = async () => {
 
     const payload = {
       name: form.name,
-      categoryId: form.categoryId,
       department: form.department,
       startDate: form.startDate,
       expectedEndDate: form.expectedEndDate,
       goal: form.goal,
       budget: Number(form.budget),
       notes: form.notes,
-      speciesCategories: form.speciesCategories.map(sc => ({
-        name: sc.name.trim(),
-        animalCount: Number(sc.animalCount)
-      })),
       goalMetrics: {
         targetWeight: form.goalMetrics.targetWeight ? Number(form.goalMetrics.targetWeight) : undefined,
         targetAge: form.goalMetrics.targetAge ? Number(form.goalMetrics.targetAge) : undefined,
@@ -145,10 +104,7 @@ const handleSubmit = async () => {
 
 onMounted(async () => {
   try {
-    await Promise.all([
-      store.fetchCategories(),
-      store.fetchDepartments()
-    ])
+    await store.fetchDepartments()
   } catch (err) {
     console.error("Erreur chargement données:", err)
   } finally {
@@ -173,14 +129,14 @@ onMounted(async () => {
         <p v-if="errors.name" class="text-rose-600 text-xs mt-1">{{ errors.name }}</p>
       </label>
 
-      <label class="text-sm text-slate-700">
+      <!-- <label class="text-sm text-slate-700">
         Catégorie
         <select v-model="form.categoryId" :disabled="loadingData" class="mt-1 w-full rounded-lg border border-slate-300 p-2 disabled:bg-slate-100">
           <option value="">{{ loadingData ? 'Chargement...' : 'Sélectionner une catégorie' }}</option>
           <option v-for="cat in store.categories" :key="cat._id" :value="cat._id">{{ cat.name }}</option>
         </select>
         <p v-if="errors.categoryId" class="text-rose-600 text-xs mt-1">{{ errors.categoryId }}</p>
-      </label>
+      </label> -->
 
       <label class="text-sm text-slate-700">
         Département
@@ -191,13 +147,13 @@ onMounted(async () => {
         <p v-if="errors.department" class="text-rose-600 text-xs mt-1">{{ errors.department }}</p>
       </label>
 
-      <label class="text-sm text-slate-700">
+      <!-- <label class="text-sm text-slate-700">
         Nombre de catégories souhaitées
         <input v-model.number="form.numberOfSpecies" @change="syncSpeciesCategories(form.numberOfSpecies)" type="number" min="1" class="mt-1 w-full rounded-lg border border-slate-300 p-2" />
         <p v-if="errors.speciesCategories" class="text-rose-600 text-xs mt-1">{{ errors.speciesCategories }}</p>
-      </label>
+      </label> -->
 
-      <div class="grid grid-cols-1 gap-4">
+      <!-- <div class="grid grid-cols-1 gap-4">
         <div v-for="(item, index) in form.speciesCategories" :key="index" class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
           <div class="flex items-center justify-between gap-3 mb-3">
             <h4 class="text-sm font-bold text-slate-800">Catégorie {{ index + 1 }}</h4>
@@ -217,9 +173,9 @@ onMounted(async () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
 
-      <button type="button" @click="addSpeciesCategory" class="w-full px-3 py-2 mt-2 text-sm font-semibold rounded-lg bg-[hsl(14,86%,42%)] text-white hover:bg-[hsl(14,86%,42%,0.85)]">Ajouter une catégorie</button>
+      <!-- <button type="button" @click="addSpeciesCategory" class="w-full px-3 py-2 mt-2 text-sm font-semibold rounded-lg bg-[hsl(14,86%,42%)] text-white hover:bg-[hsl(14,86%,42%,0.85)]">Ajouter une catégorie</button> -->
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <label class="text-sm text-slate-700">
@@ -238,13 +194,13 @@ onMounted(async () => {
         Objectif
         <select v-model="form.goal" class="mt-1 w-full rounded-lg border border-slate-300 p-2">
           <option value="">Sélectionner un objectif</option>
-          <option v-for="g in goals" :key="g" :value="g">{{ g }}</option>
+          <option v-for="g in goals" :key="g" :value="g">{{ formatGoalLabel(g) }}</option>
         </select>
         <p v-if="errors.goal" class="text-rose-600 text-xs mt-1">{{ errors.goal }}</p>
       </label>
 
       <label class="text-sm text-slate-700">
-        Budget (€)
+        Budget (XOF)
         <input v-model="form.budget" type="number" min="0" step="0.01" class="mt-1 w-full rounded-lg border border-slate-300 p-2" />
         <p v-if="errors.budget" class="text-rose-600 text-xs mt-1">{{ errors.budget }}</p>
       </label>
