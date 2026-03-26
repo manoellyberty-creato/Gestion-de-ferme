@@ -1,6 +1,7 @@
 // Service pour la gestion des animaux
 import Animal from '../models/Animal.js';
 import Campaign from '../models/Campaign.js';
+import qrCodeService from './qrCode.service.js';
 
 class AnimalService {
     /**
@@ -90,7 +91,32 @@ class AnimalService {
                 throw new Error('Tag number already exists');
             }
 
+            // Générer le QR code
+            const qrCodeData = {
+                id: '', // Sera défini après la création
+                tagNumber: animalData.tagNumber,
+                species: animalData.species,
+                name: animalData.name,
+                campaign: animalData.campaign
+            };
+
+            const qrCode = await qrCodeService.generateCustomQRCode(qrCodeData);
+            animalData.qrCode = qrCode;
+
             const animal = new Animal(animalData);
+            await animal.save();
+
+            // Mettre à jour le QR code avec l'ID réel
+            const finalQrCodeData = {
+                id: animal._id.toString(),
+                tagNumber: animal.tagNumber,
+                species: animal.species,
+                name: animal.name,
+                campaign: animal.campaign.toString()
+            };
+
+            const finalQrCode = await qrCodeService.generateCustomQRCode(finalQrCodeData);
+            animal.qrCode = finalQrCode;
             await animal.save();
 
             return await this.getAnimalById(animal._id);
@@ -159,6 +185,37 @@ class AnimalService {
                 { tagNumber },
                 {
                     weight: weight,
+                    updatedAt: new Date()
+                },
+                { new: true }
+            ).populate('campaign', 'name type');
+
+            if (!animal) {
+                throw new Error('Animal not found');
+            }
+
+            return animal;
+        } catch (error) {
+            console.error('Error updating animal weight:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Met à jour le poids d'un animal
+     */
+    async updateAnimalWeight(tagNumber, weight) {
+        try {
+            const animal = await Animal.findOneAndUpdate(
+                { tagNumber },
+                {
+                    currentWeight: weight,
+                    $push: {
+                        growthHistory: {
+                            date: new Date(),
+                            weight: weight
+                        }
+                    },
                     updatedAt: new Date()
                 },
                 { new: true }

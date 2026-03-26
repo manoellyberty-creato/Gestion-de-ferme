@@ -111,6 +111,12 @@ const routes = [
     component: CampaignDetail, 
     meta: { requiresAuth: true } 
   },
+  { 
+    path: '/campaigns/:id/animals', 
+    name: 'CampaignAnimals', 
+    component: () => import('@/components/AnimalList.vue'), 
+    meta: { requiresAuth: true } 
+  },
 
   // --- Autres Modules ---
   { path: '/feed', name: 'Feed', component: Feed, meta: { requiresAuth: true } },

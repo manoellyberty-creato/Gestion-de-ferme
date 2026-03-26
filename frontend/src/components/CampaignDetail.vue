@@ -25,6 +25,13 @@
             </div>
 
             <div class="flex gap-3">
+                <button @click="router.push(`/campaigns/${campaign._id}/animals`)" class="px-5 py-2.5 text-sm font-bold text-blue-700 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 hover:border-blue-300 hover:shadow-md transition-all active:scale-95">
+                    <div class="flex items-center gap-2">
+                        <span>🐄</span>
+                        Gestion des Animaux
+                    </div>
+                </button>
+
                 <button @click="router.push(`/campaigns/edit/${campaign._id}`)"
                     class="px-5 py-2.5 text-sm font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 hover:shadow-md transition-all active:scale-95">
                     Modifier les infos

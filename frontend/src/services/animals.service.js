@@ -8,6 +8,18 @@ export function getAnimalById(id) {
   return api.get(`/animals/${id}`)
 }
 
+export function createAnimal(animalData) {
+  return api.post('/animals', animalData)
+}
+
+export function updateAnimal(id, animalData) {
+  return api.put(`/animals/${id}`, animalData)
+}
+
+export function deleteAnimal(id) {
+  return api.delete(`/animals/${id}`)
+}
+
 export function generateAnimalQRCode(id) {
   return api.get(`/animals/${id}/qrcode`, { responseType: 'blob' })
 }

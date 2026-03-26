@@ -44,6 +44,16 @@ class QRCodeService {
     }
 
     /**
+     * Génère un QR code avec des données personnalisées (alias pour generateCustomQRCode)
+     * @param {Object} data - Données à encoder
+     * @param {Object} options - Options de génération
+     * @returns {Promise<string>} - QR code en base64
+     */
+    async generateQRCode(data, options = {}) {
+        return this.generateCustomQRCode(data, options);
+    }
+
+    /**
      * Génère un QR code avec des données personnalisées
      * @param {Object} data - Données à encoder
      * @param {Object} options - Options de génération
